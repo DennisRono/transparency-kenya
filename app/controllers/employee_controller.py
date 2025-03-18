@@ -1,20 +1,21 @@
 from typing import List, Optional
-from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, or_
 from datetime import datetime
-
 from app.models.employee import Employee
 from app.models.performance import PerformanceReview
 from app.schemas import employee_schema
 
-def get_employee(db: Session, employee_id: int):
-    return db.query(Employee).filter(
+async def get_employee(db: AsyncSession, employee_id: int):
+    query = select(Employee).where(
         Employee.id == employee_id,
         Employee.is_deleted == False
-    ).first()
+    )
+    result = await db.execute(query)
+    return result.scalar_one_or_none()
 
-def get_employees(
-    db: Session,
+async def get_employees(
+    db: AsyncSession,
     skip: int = 0,
     limit: int = 100,
     name: Optional[str] = None,
@@ -23,10 +24,10 @@ def get_employees(
     department_id: Optional[int] = None,
     status: Optional[str] = None
 ):
-    query = db.query(Employee).filter(Employee.is_deleted == False)
+    query = select(Employee).where(Employee.is_deleted == False)
     
     if name:
-        query = query.filter(
+        query = query.where(
             or_(
                 Employee.first_name.ilike(f"%{name}%"),
                 Employee.last_name.ilike(f"%{name}%")
@@ -34,20 +35,22 @@ def get_employees(
         )
     
     if position_id:
-        query = query.filter(Employee.position_id == position_id)
+        query = query.where(Employee.position_id == position_id)
     
     if ministry_id:
-        query = query.filter(Employee.ministry_id == ministry_id)
+        query = query.where(Employee.ministry_id == ministry_id)
     
     if department_id:
-        query = query.filter(Employee.department_id == department_id)
+        query = query.where(Employee.department_id == department_id)
     
     if status:
-        query = query.filter(Employee.status == status)
+        query = query.where(Employee.status == status)
     
-    return query.offset(skip).limit(limit).all()
+    query = query.offset(skip).limit(limit)
+    result = await db.execute(query)
+    return result.scalars().all()
 
-def create_employee(db: Session, employee: employee_schema.EmployeeCreate):
+async def create_employee(db: AsyncSession, employee: employee_schema.EmployeeCreate):
     db_employee = Employee(
         first_name=employee.first_name,
         middle_name=employee.middle_name,
@@ -98,31 +101,33 @@ def create_employee(db: Session, employee: employee_schema.EmployeeCreate):
     )
     
     db.add(db_employee)
-    db.commit()
-    db.refresh(db_employee)
+    await db.commit()
+    await db.refresh(db_employee)
     return db_employee
 
-def update_employee(db: Session, employee_id: int, employee: employee_schema.EmployeeUpdate):
-    db_employee = get_employee(db, employee_id)
+async def update_employee(db: AsyncSession, employee_id: int, employee: employee_schema.EmployeeUpdate):
+    db_employee = await get_employee(db, employee_id)
     
     # Update employee attributes
     for key, value in employee.dict(exclude_unset=True).items():
         setattr(db_employee, key, value)
     
-    db.commit()
-    db.refresh(db_employee)
+    await db.commit()
+    await db.refresh(db_employee)
     return db_employee
 
-def delete_employee(db: Session, employee_id: int):
-    db_employee = get_employee(db, employee_id)
+async def delete_employee(db: AsyncSession, employee_id: int):
+    db_employee = await get_employee(db, employee_id)
     db_employee.is_deleted = True
     db_employee.deleted_at = datetime.now()
-    db.commit()
+    await db.commit()
     return db_employee
 
-def get_employee_performance_reviews(db: Session, employee_id: int):
-    return db.query(PerformanceReview).filter(
+async def get_employee_performance_reviews(db: AsyncSession, employee_id: int):
+    query = select(PerformanceReview).where(
         PerformanceReview.employee_id == employee_id,
         PerformanceReview.is_deleted == False
-    ).all()
+    )
+    result = await db.execute(query)
+    return result.scalars().all()
 

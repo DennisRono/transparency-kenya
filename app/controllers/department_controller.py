@@ -1,32 +1,35 @@
 from typing import List, Optional
-from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, or_
 from datetime import datetime
-
 from app.models.government import Department, Agency
 from app.schemas import department_schema
 
-def get_department(db: Session, department_id: int):
-    return db.query(Department).filter(Department.id == department_id, Department.is_deleted == False).first()
+async def get_department(db: AsyncSession, department_id: int):
+    query = select(Department).where(Department.id == department_id, Department.is_deleted == False)
+    result = await db.execute(query)
+    return result.scalar_one_or_none()
 
-def get_departments(
-    db: Session, 
+async def get_departments(
+    db: AsyncSession, 
     skip: int = 0, 
     limit: int = 100, 
     name: Optional[str] = None,
     ministry_id: Optional[int] = None
 ):
-    query = db.query(Department).filter(Department.is_deleted == False)
+    query = select(Department).where(Department.is_deleted == False)
     
     if name:
-        query = query.filter(Department.name.ilike(f"%{name}%"))
+        query = query.where(Department.name.ilike(f"%{name}%"))
     
     if ministry_id:
-        query = query.filter(Department.ministry_id == ministry_id)
+        query = query.where(Department.ministry_id == ministry_id)
     
-    return query.offset(skip).limit(limit).all()
+    query = query.offset(skip).limit(limit)
+    result = await db.execute(query)
+    return result.scalars().all()
 
-def create_department(db: Session, department: department_schema.DepartmentCreate):
+async def create_department(db: AsyncSession, department: department_schema.DepartmentCreate):
     db_department = Department(
         name=department.name,
         code=department.code,
@@ -42,31 +45,33 @@ def create_department(db: Session, department: department_schema.DepartmentCreat
         ministry_id=department.ministry_id
     )
     db.add(db_department)
-    db.commit()
-    db.refresh(db_department)
+    await db.commit()
+    await db.refresh(db_department)
     return db_department
 
-def update_department(db: Session, department_id: int, department: department_schema.DepartmentUpdate):
-    db_department = get_department(db, department_id)
+async def update_department(db: AsyncSession, department_id: int, department: department_schema.DepartmentUpdate):
+    db_department = await get_department(db, department_id)
     
     # Update department attributes
     for key, value in department.dict(exclude_unset=True).items():
         setattr(db_department, key, value)
     
-    db.commit()
-    db.refresh(db_department)
+    await db.commit()
+    await db.refresh(db_department)
     return db_department
 
-def delete_department(db: Session, department_id: int):
-    db_department = get_department(db, department_id)
+async def delete_department(db: AsyncSession, department_id: int):
+    db_department = await get_department(db, department_id)
     db_department.is_deleted = True
     db_department.deleted_at = datetime.now()
-    db.commit()
+    await db.commit()
     return db_department
 
-def get_department_agencies(db: Session, department_id: int):
-    return db.query(Agency).filter(
+async def get_department_agencies(db: AsyncSession, department_id: int):
+    query = select(Agency).where(
         Agency.department_id == department_id,
         Agency.is_deleted == False
-    ).all()
+    )
+    result = await db.execute(query)
+    return result.scalars().all()
 

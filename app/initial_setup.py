@@ -1,14 +1,17 @@
 import json
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from datetime import datetime
 import os
 import sys
 import logging
+import asyncio
 
-# Add the parent directory to the Python path
+from app.models.base import Base
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.db.session import SessionLocal, engine, Base
+from app.db.session import AsyncSessionLocal, engine
 from app.models.employee import Role, UserAccount, Employee, Position, MaritalStatus, Gender, EmploymentStatus
 from app.auth.security import get_password_hash
 from app.auth.permissions import ADMIN_PERMISSIONS, MANAGER_PERMISSIONS, OFFICER_PERMISSIONS, PUBLIC_PERMISSIONS
@@ -17,39 +20,40 @@ from app.core.config import settings
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Create tables
-Base.metadata.create_all(bind=engine)
-
-def init_db() -> None:
+async def init_db() -> None:
     """
     Initialize database with initial roles and admin user.
     """
-    db = SessionLocal()
-    try:
-        # Create roles if they don't exist
-        create_roles(db)
-        
-        # Create admin position if it doesn't exist
-        admin_position = get_or_create_admin_position(db)
-        
-        # Create admin employee if it doesn't exist
-        admin_employee = get_or_create_admin_employee(db, admin_position.id)
-        
-        # Create admin user if it doesn't exist
-        get_or_create_admin_user(db, admin_employee.id)
-        
-        logger.info("Initial database setup completed successfully")
-    except Exception as e:
-        logger.error(f"Error during database initialization: {e}")
-    finally:
-        db.close()
+    # Create tables
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    
+    async with AsyncSessionLocal() as db:
+        try:
+            # Create roles if they don't exist
+            await create_roles(db)
+            
+            # Create admin position if it doesn't exist
+            admin_position = await get_or_create_admin_position(db)
+            
+            # Create admin employee if it doesn't exist
+            admin_employee = await get_or_create_admin_employee(db, admin_position.id)
+            
+            # Create admin user if it doesn't exist
+            await get_or_create_admin_user(db, admin_employee.id)
+            
+            logger.info("Initial database setup completed successfully")
+        except Exception as e:
+            logger.error(f"Error during database initialization: {e}")
 
-def create_roles(db: Session) -> None:
+async def create_roles(db: AsyncSession) -> None:
     """
     Create default roles.
     """
     # Check if roles already exist
-    if db.query(Role).count() > 0:
+    query = select(Role)
+    result = await db.execute(query)
+    if result.scalars().first():
         logger.info("Roles already exist, skipping role creation")
         return
     
@@ -93,15 +97,18 @@ def create_roles(db: Session) -> None:
     )
     db.add(public_role)
     
-    db.commit()
+    await db.commit()
     logger.info("Created default roles")
 
-def get_or_create_admin_position(db: Session) -> Position:
+async def get_or_create_admin_position(db: AsyncSession) -> Position:
     """
     Get or create the admin position.
     """
     # Check if position already exists
-    admin_position = db.query(Position).filter(Position.code == "ADMIN").first()
+    query = select(Position).where(Position.code == "ADMIN")
+    result = await db.execute(query)
+    admin_position = result.scalar_one_or_none()
+    
     if admin_position:
         return admin_position
     
@@ -122,17 +129,20 @@ def get_or_create_admin_position(db: Session) -> Position:
         is_executive=True
     )
     db.add(admin_position)
-    db.commit()
-    db.refresh(admin_position)
+    await db.commit()
+    await db.refresh(admin_position)
     logger.info("Created admin position")
     return admin_position
 
-def get_or_create_admin_employee(db: Session, position_id: int) -> Employee:
+async def get_or_create_admin_employee(db: AsyncSession, position_id: int) -> Employee:
     """
     Get or create the admin employee.
     """
     # Check if employee already exists
-    admin_employee = db.query(Employee).filter(Employee.employee_number == "ADMIN-001").first()
+    query = select(Employee).where(Employee.employee_number == "ADMIN-001")
+    result = await db.execute(query)
+    admin_employee = result.scalar_one_or_none()
+    
     if admin_employee:
         return admin_employee
     
@@ -165,22 +175,28 @@ def get_or_create_admin_employee(db: Session, position_id: int) -> Employee:
         position_id=position_id
     )
     db.add(admin_employee)
-    db.commit()
-    db.refresh(admin_employee)
+    await db.commit()
+    await db.refresh(admin_employee)
     logger.info("Created admin employee")
     return admin_employee
 
-def get_or_create_admin_user(db: Session, employee_id: int) -> UserAccount:
+async def get_or_create_admin_user(db: AsyncSession, employee_id: int) -> UserAccount:
     """
     Get or create the admin user.
     """
     # Check if user already exists
-    admin_user = db.query(UserAccount).filter(UserAccount.username == "admin").first()
+    query = select(UserAccount).where(UserAccount.username == "admin")
+    result = await db.execute(query)
+    admin_user = result.scalar_one_or_none()
+    
     if admin_user:
         return admin_user
     
     # Get admin role
-    admin_role = db.query(Role).filter(Role.name == "Administrator").first()
+    query = select(Role).where(Role.name == "Administrator")
+    result = await db.execute(query)
+    admin_role = result.scalar_one_or_none()
+    
     if not admin_role:
         raise Exception("Admin role not found")
     
@@ -198,14 +214,14 @@ def get_or_create_admin_user(db: Session, employee_id: int) -> UserAccount:
         role_id=admin_role.id
     )
     db.add(admin_user)
-    db.commit()
-    db.refresh(admin_user)
+    await db.commit()
+    await db.refresh(admin_user)
     logger.info("Created admin user with username 'admin' and password 'admin123'")
     logger.warning("PLEASE CHANGE THE DEFAULT ADMIN PASSWORD IMMEDIATELY!")
     return admin_user
 
 if __name__ == "__main__":
     logger.info("Creating initial database data...")
-    init_db()
+    asyncio.run(init_db())
     logger.info("Initial database data created successfully")
 

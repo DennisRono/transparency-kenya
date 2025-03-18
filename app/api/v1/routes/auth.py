@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
-
 from app.controllers import auth_controller
 from app.auth.jwt import get_current_active_user
 from app.db.session import get_db
@@ -12,14 +11,14 @@ from app.models.employee import UserAccount
 router = APIRouter()
 
 @router.post("/login", response_model=auth_schema.Token)
-def login(
+async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     OAuth2 compatible token login, get an access token for future requests.
     """
-    user = auth_controller.authenticate(db, form_data.username, form_data.password)
+    user = await auth_controller.authenticate(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -39,7 +38,7 @@ def login(
     
     # Update last login
     user.last_login = datetime.utcnow()
-    db.commit()
+    await db.commit()
     
     access_token = auth_controller.create_user_token(user.id)
     return {
@@ -48,10 +47,10 @@ def login(
     }
 
 @router.post("/password-change", response_model=auth_schema.User)
-def change_password(
+async def change_password(
     password_data: auth_schema.PasswordChange,
     current_user: UserAccount = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Change the current user's password.
@@ -64,11 +63,11 @@ def change_password(
         )
     
     # Change password
-    user = auth_controller.change_password(db, current_user.id, password_data.new_password)
+    user = await auth_controller.change_password(db, current_user.id, password_data.new_password)
     return user
 
 @router.get("/me", response_model=auth_schema.User)
-def read_users_me(current_user: UserAccount = Depends(get_current_active_user)):
+async def read_users_me(current_user: UserAccount = Depends(get_current_active_user)):
     """
     Get current user information.
     """

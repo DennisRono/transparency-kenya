@@ -1,20 +1,21 @@
-from typing import List, Optional
-from sqlalchemy.orm import Session
-from sqlalchemy import or_
-from datetime import datetime
 import uuid
-
+from typing import List, Optional
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, or_
+from datetime import datetime
 from app.models.public import Complaint
 from app.schemas import complaint_schema
 
-def get_complaint(db: Session, complaint_id: int):
-    return db.query(Complaint).filter(
+async def get_complaint(db: AsyncSession, complaint_id: int):
+    query = select(Complaint).where(
         Complaint.id == complaint_id,
         Complaint.is_deleted == False
-    ).first()
+    )
+    result = await db.execute(query)
+    return result.scalar_one_or_none()
 
-def get_complaints(
-    db: Session,
+async def get_complaints(
+    db: AsyncSession,
     skip: int = 0,
     limit: int = 100,
     status: Optional[str] = None,
@@ -22,23 +23,25 @@ def get_complaints(
     ministry_id: Optional[int] = None,
     department_id: Optional[int] = None
 ):
-    query = db.query(Complaint).filter(Complaint.is_deleted == False)
+    query = select(Complaint).where(Complaint.is_deleted == False)
     
     if status:
-        query = query.filter(Complaint.status == status)
+        query = query.where(Complaint.status == status)
     
     if priority:
-        query = query.filter(Complaint.priority == priority)
+        query = query.where(Complaint.priority == priority)
     
     if ministry_id:
-        query = query.filter(Complaint.ministry_id == ministry_id)
+        query = query.where(Complaint.ministry_id == ministry_id)
     
     if department_id:
-        query = query.filter(Complaint.department_id == department_id)
+        query = query.where(Complaint.department_id == department_id)
     
-    return query.order_by(Complaint.submission_date.desc()).offset(skip).limit(limit).all()
+    query = query.order_by(Complaint.submission_date.desc()).offset(skip).limit(limit)
+    result = await db.execute(query)
+    return result.scalars().all()
 
-def create_complaint(db: Session, complaint: complaint_schema.ComplaintCreate):
+async def create_complaint(db: AsyncSession, complaint: complaint_schema.ComplaintCreate):
     # Generate a unique reference number
     reference_number = f"C-{uuid.uuid4().hex[:8].upper()}"
     
@@ -59,12 +62,12 @@ def create_complaint(db: Session, complaint: complaint_schema.ComplaintCreate):
     )
     
     db.add(db_complaint)
-    db.commit()
-    db.refresh(db_complaint)
+    await db.commit()
+    await db.refresh(db_complaint)
     return db_complaint
 
-def update_complaint(db: Session, complaint_id: int, complaint: complaint_schema.ComplaintUpdate):
-    db_complaint = get_complaint(db, complaint_id)
+async def update_complaint(db: AsyncSession, complaint_id: int, complaint: complaint_schema.ComplaintUpdate):
+    db_complaint = await get_complaint(db, complaint_id)
     
     # Update complaint attributes
     for key, value in complaint.dict(exclude_unset=True).items():
@@ -74,25 +77,25 @@ def update_complaint(db: Session, complaint_id: int, complaint: complaint_schema
     if complaint.status == "resolved":
         db_complaint.resolution_date = datetime.now()
     
-    db.commit()
-    db.refresh(db_complaint)
+    await db.commit()
+    await db.refresh(db_complaint)
     return db_complaint
 
-def delete_complaint(db: Session, complaint_id: int):
-    db_complaint = get_complaint(db, complaint_id)
+async def delete_complaint(db: AsyncSession, complaint_id: int):
+    db_complaint = await get_complaint(db, complaint_id)
     db_complaint.is_deleted = True
     db_complaint.deleted_at = datetime.now()
-    db.commit()
+    await db.commit()
     return db_complaint
 
-def assign_complaint(db: Session, complaint_id: int, assignment: complaint_schema.ComplaintAssignment):
-    db_complaint = get_complaint(db, complaint_id)
+async def assign_complaint(db: AsyncSession, complaint_id: int, assignment: complaint_schema.ComplaintAssignment):
+    db_complaint = await get_complaint(db, complaint_id)
     
     db_complaint.assigned_to = assignment.assigned_to
     db_complaint.assignment_date = datetime.now()
     db_complaint.status = "under_review"
     
-    db.commit()
-    db.refresh(db_complaint)
+    await db.commit()
+    await db.refresh(db_complaint)
     return db_complaint
 

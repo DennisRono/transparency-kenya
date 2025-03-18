@@ -1,18 +1,22 @@
 from datetime import datetime, timedelta
 import secrets
-from typing import Optional
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, update
 from fastapi import HTTPException, status
+from typing import Optional
 
 from app.models.employee import UserAccount
 from app.auth.security import get_password_hash
 from app.core.config import settings
 
-def generate_password_reset_token(db: Session, email: str) -> str:
+async def generate_password_reset_token(db: AsyncSession, email: str) -> Optional[str]:
     """
     Generate a password reset token for a user.
     """
-    user = db.query(UserAccount).filter(UserAccount.email == email).first()
+    query = select(UserAccount).where(UserAccount.email == email)
+    result = await db.execute(query)
+    user = result.scalar_one_or_none()
+    
     if not user:
         # Don't reveal that the user doesn't exist
         return None
@@ -31,15 +35,18 @@ def generate_password_reset_token(db: Session, email: str) -> str:
     user.activation_token = token
     user.activation_token_expiry = expiry
     
-    db.commit()
+    await db.commit()
     
     return token
 
-def verify_password_reset_token(db: Session, token: str) -> Optional[UserAccount]:
+async def verify_password_reset_token(db: AsyncSession, token: str) -> Optional[UserAccount]:
     """
     Verify a password reset token.
     """
-    user = db.query(UserAccount).filter(UserAccount.activation_token == token).first()
+    query = select(UserAccount).where(UserAccount.activation_token == token)
+    result = await db.execute(query)
+    user = result.scalar_one_or_none()
+    
     if not user:
         return None
     
@@ -49,11 +56,11 @@ def verify_password_reset_token(db: Session, token: str) -> Optional[UserAccount
     
     return user
 
-def reset_password(db: Session, token: str, new_password: str) -> UserAccount:
+async def reset_password(db: AsyncSession, token: str, new_password: str) -> UserAccount:
     """
     Reset a user's password using a token.
     """
-    user = verify_password_reset_token(db, token)
+    user = await verify_password_reset_token(db, token)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -67,8 +74,8 @@ def reset_password(db: Session, token: str, new_password: str) -> UserAccount:
     user.password_reset_required = False
     user.last_password_change = datetime.utcnow()
     
-    db.commit()
-    db.refresh(user)
+    await db.commit()
+    await db.refresh(user)
     
     return user
 

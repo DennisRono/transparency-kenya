@@ -3,27 +3,31 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from pydantic import ValidationError
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from app.core.config import settings
 from app.auth.security import verify_password
 from app.db.session import get_db
 from app.models.employee import UserAccount, Role
 from app.schemas.auth_schema import TokenPayload
-from app.core.config import settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")
 
-def authenticate_user(db: Session, username: str, password: str) -> Optional[UserAccount]:
+async def authenticate_user(db: AsyncSession, username: str, password: str) -> Optional[UserAccount]:
     """
     Authenticate a user by username and password.
     """
-    user = db.query(UserAccount).filter(UserAccount.username == username).first()
+    query = select(UserAccount).where(UserAccount.username == username)
+    result = await db.execute(query)
+    user = result.scalar_one_or_none()
+    
     if not user:
         return None
     if not verify_password(password, user.password_hash):
         return None
     return user
 
-def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)) -> UserAccount:
+async def get_current_user(db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme)) -> UserAccount:
     """
     Get the current authenticated user.
     """
@@ -37,7 +41,10 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    user = db.query(UserAccount).filter(UserAccount.id == token_data.sub).first()
+    query = select(UserAccount).where(UserAccount.id == token_data.sub)
+    result = await db.execute(query)
+    user = result.scalar_one_or_none()
+    
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -53,7 +60,7 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
     
     return user
 
-def check_user_permissions(required_permissions: list, user: UserAccount = Depends(get_current_user)) -> bool:
+async def check_user_permissions(required_permissions: list, user: UserAccount = Depends(get_current_user)) -> bool:
     """
     Check if the user has the required permissions.
     """
@@ -67,8 +74,9 @@ def check_user_permissions(required_permissions: list, user: UserAccount = Depen
             return False
     return True
 
-def get_admin_user(
+async def get_admin_user(
     current_user: UserAccount = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
 ) -> UserAccount:
     """
     Check if the user is an admin.
@@ -80,3 +88,4 @@ def get_admin_user(
             detail="The user doesn't have enough privileges",
         )
     return current_user
+

@@ -1,23 +1,26 @@
-import datetime
 from typing import List, Optional
-from sqlalchemy.orm import Session
-from sqlalchemy import or_
-
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, or_, update, delete
+from datetime import datetime
 from app.models.government import Ministry, Department
 from app.schemas import ministry_schema
 
-def get_ministry(db: Session, ministry_id: int):
-    return db.query(Ministry).filter(Ministry.id == ministry_id, Ministry.is_deleted == False).first()
+async def get_ministry(db: AsyncSession, ministry_id: int):
+    query = select(Ministry).where(Ministry.id == ministry_id, Ministry.is_deleted == False)
+    result = await db.execute(query)
+    return result.scalar_one_or_none()
 
-def get_ministries(db: Session, skip: int = 0, limit: int = 100, name: Optional[str] = None):
-    query = db.query(Ministry).filter(Ministry.is_deleted == False)
+async def get_ministries(db: AsyncSession, skip: int = 0, limit: int = 100, name: Optional[str] = None):
+    query = select(Ministry).where(Ministry.is_deleted == False)
     
     if name:
-        query = query.filter(Ministry.name.ilike(f"%{name}%"))
+        query = query.where(Ministry.name.ilike(f"%{name}%"))
     
-    return query.offset(skip).limit(limit).all()
+    query = query.offset(skip).limit(limit)
+    result = await db.execute(query)
+    return result.scalars().all()
 
-def create_ministry(db: Session, ministry: ministry_schema.MinistryCreate):
+async def create_ministry(db: AsyncSession, ministry: ministry_schema.MinistryCreate):
     db_ministry = Ministry(
         name=ministry.name,
         code=ministry.code,
@@ -32,31 +35,33 @@ def create_ministry(db: Session, ministry: ministry_schema.MinistryCreate):
         is_active=ministry.is_active
     )
     db.add(db_ministry)
-    db.commit()
-    db.refresh(db_ministry)
+    await db.commit()
+    await db.refresh(db_ministry)
     return db_ministry
 
-def update_ministry(db: Session, ministry_id: int, ministry: ministry_schema.MinistryUpdate):
-    db_ministry = get_ministry(db, ministry_id)
+async def update_ministry(db: AsyncSession, ministry_id: int, ministry: ministry_schema.MinistryUpdate):
+    db_ministry = await get_ministry(db, ministry_id)
     
     # Update ministry attributes
     for key, value in ministry.dict(exclude_unset=True).items():
         setattr(db_ministry, key, value)
     
-    db.commit()
-    db.refresh(db_ministry)
+    await db.commit()
+    await db.refresh(db_ministry)
     return db_ministry
 
-def delete_ministry(db: Session, ministry_id: int):
-    db_ministry = get_ministry(db, ministry_id)
+async def delete_ministry(db: AsyncSession, ministry_id: int):
+    db_ministry = await get_ministry(db, ministry_id)
     db_ministry.is_deleted = True
     db_ministry.deleted_at = datetime.now()
-    db.commit()
+    await db.commit()
     return db_ministry
 
-def get_ministry_departments(db: Session, ministry_id: int):
-    return db.query(Department).filter(
+async def get_ministry_departments(db: AsyncSession, ministry_id: int):
+    query = select(Department).where(
         Department.ministry_id == ministry_id,
         Department.is_deleted == False
-    ).all()
+    )
+    result = await db.execute(query)
+    return result.scalars().all()
 

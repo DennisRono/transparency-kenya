@@ -1,9 +1,9 @@
-from typing import List, Optional
-from sqlalchemy.orm import Session
-from sqlalchemy import or_
-from datetime import datetime
-import uuid
 import os
+import uuid
+from typing import List, Optional
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, or_
+from datetime import datetime
 from fastapi import UploadFile, HTTPException
 import aiofiles
 from pathlib import Path
@@ -15,14 +15,16 @@ from app.schemas import crime_report_schema
 UPLOAD_DIR = Path("uploads/evidence")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-def get_crime_report(db: Session, report_id: int):
-    return db.query(CrimeReport).filter(
+async def get_crime_report(db: AsyncSession, report_id: int):
+    query = select(CrimeReport).where(
         CrimeReport.id == report_id,
         CrimeReport.is_deleted == False
-    ).first()
+    )
+    result = await db.execute(query)
+    return result.scalar_one_or_none()
 
-def get_crime_reports(
-    db: Session,
+async def get_crime_reports(
+    db: AsyncSession,
     skip: int = 0,
     limit: int = 100,
     status: Optional[str] = None,
@@ -31,28 +33,30 @@ def get_crime_reports(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None
 ):
-    query = db.query(CrimeReport).filter(CrimeReport.is_deleted == False)
+    query = select(CrimeReport).where(CrimeReport.is_deleted == False)
     
     if status:
-        query = query.filter(CrimeReport.status == status)
+        query = query.where(CrimeReport.status == status)
     
     if crime_type:
-        query = query.filter(CrimeReport.crime_type == crime_type)
+        query = query.where(CrimeReport.crime_type == crime_type)
     
     if priority:
-        query = query.filter(CrimeReport.priority == priority)
+        query = query.where(CrimeReport.priority == priority)
     
     if start_date:
         start_datetime = datetime.strptime(start_date, "%Y-%m-%d")
-        query = query.filter(CrimeReport.report_datetime >= start_datetime)
+        query = query.where(CrimeReport.report_datetime >= start_datetime)
     
     if end_date:
         end_datetime = datetime.strptime(end_date, "%Y-%m-%d")
-        query = query.filter(CrimeReport.report_datetime <= end_datetime)
+        query = query.where(CrimeReport.report_datetime <= end_datetime)
     
-    return query.order_by(CrimeReport.report_datetime.desc()).offset(skip).limit(limit).all()
+    query = query.order_by(CrimeReport.report_datetime.desc()).offset(skip).limit(limit)
+    result = await db.execute(query)
+    return result.scalars().all()
 
-def create_crime_report(db: Session, report: crime_report_schema.CrimeReportCreate):
+async def create_crime_report(db: AsyncSession, report: crime_report_schema.CrimeReportCreate):
     # Generate a unique report number
     report_number = f"CR-{uuid.uuid4().hex[:8].upper()}"
     
@@ -79,8 +83,8 @@ def create_crime_report(db: Session, report: crime_report_schema.CrimeReportCrea
     )
     
     db.add(db_report)
-    db.commit()
-    db.refresh(db_report)
+    await db.commit()
+    await db.refresh(db_report)
     
     # Create initial status update
     status_update = ReportStatusUpdate(
@@ -95,29 +99,29 @@ def create_crime_report(db: Session, report: crime_report_schema.CrimeReportCrea
     )
     
     db.add(status_update)
-    db.commit()
+    await db.commit()
     
     return db_report
 
-def update_crime_report(db: Session, report_id: int, report: crime_report_schema.CrimeReportUpdate):
-    db_report = get_crime_report(db, report_id)
+async def update_crime_report(db: AsyncSession, report_id: int, report: crime_report_schema.CrimeReportUpdate):
+    db_report = await get_crime_report(db, report_id)
     
     # Update report attributes
     for key, value in report.dict(exclude_unset=True).items():
         setattr(db_report, key, value)
     
-    db.commit()
-    db.refresh(db_report)
+    await db.commit()
+    await db.refresh(db_report)
     return db_report
 
-def delete_crime_report(db: Session, report_id: int):
-    db_report = get_crime_report(db, report_id)
+async def delete_crime_report(db: AsyncSession, report_id: int):
+    db_report = await get_crime_report(db, report_id)
     db_report.is_deleted = True
     db_report.deleted_at = datetime.now()
-    db.commit()
+    await db.commit()
     return db_report
 
-async def add_media_evidence(db: Session, report_id: int, file: UploadFile, description: Optional[str] = None):
+async def add_media_evidence(db: AsyncSession, report_id: int, file: UploadFile, description: Optional[str] = None):
     # Generate a unique evidence ID
     evidence_id = f"EV-{uuid.uuid4().hex[:8].upper()}"
     
@@ -162,12 +166,12 @@ async def add_media_evidence(db: Session, report_id: int, file: UploadFile, desc
     )
     
     db.add(db_evidence)
-    db.commit()
-    db.refresh(db_evidence)
+    await db.commit()
+    await db.refresh(db_evidence)
     
     return db_evidence
 
-def add_witness_statement(db: Session, report_id: int, statement: crime_report_schema.WitnessStatementCreate):
+async def add_witness_statement(db: AsyncSession, report_id: int, statement: crime_report_schema.WitnessStatementCreate):
     # Generate a unique statement ID
     statement_id = f"WS-{uuid.uuid4().hex[:8].upper()}"
     
@@ -185,12 +189,12 @@ def add_witness_statement(db: Session, report_id: int, statement: crime_report_s
     )
     
     db.add(db_statement)
-    db.commit()
-    db.refresh(db_statement)
+    await db.commit()
+    await db.refresh(db_statement)
     
     return db_statement
 
-def add_status_update(db: Session, report_id: int, status_update: crime_report_schema.StatusUpdateCreate):
+async def add_status_update(db: AsyncSession, report_id: int, status_update: crime_report_schema.StatusUpdateCreate):
     db_status_update = ReportStatusUpdate(
         crime_report_id=report_id,
         status=status_update.status,
@@ -205,11 +209,11 @@ def add_status_update(db: Session, report_id: int, status_update: crime_report_s
     db.add(db_status_update)
     
     # Update the report status
-    db_report = get_crime_report(db, report_id)
+    db_report = await get_crime_report(db, report_id)
     db_report.status = status_update.status
     
-    db.commit()
-    db.refresh(db_status_update)
+    await db.commit()
+    await db.refresh(db_status_update)
     
     return db_status_update
 

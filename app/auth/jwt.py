@@ -1,11 +1,11 @@
+import json
 from typing import List, Optional, Union, Any
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from pydantic import ValidationError
-from sqlalchemy.orm import Session
-import json
-
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from app.core.config import settings
 from app.db.session import get_db
 from app.models.employee import UserAccount, Role
@@ -13,8 +13,8 @@ from app.schemas.auth_schema import TokenPayload
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")
 
-def get_current_user(
-    db: Session = Depends(get_db), 
+async def get_current_user(
+    db: AsyncSession = Depends(get_db), 
     token: str = Depends(oauth2_scheme)
 ) -> UserAccount:
     """
@@ -30,7 +30,10 @@ def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    user = db.query(UserAccount).filter(UserAccount.id == token_data.sub).first()
+    query = select(UserAccount).where(UserAccount.id == token_data.sub)
+    result = await db.execute(query)
+    user = result.scalar_one_or_none()
+    
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -40,7 +43,7 @@ def get_current_user(
     
     return user
 
-def get_current_active_user(
+async def get_current_active_user(
     current_user: UserAccount = Depends(get_current_user),
 ) -> UserAccount:
     """
@@ -66,18 +69,21 @@ def has_permission(required_permissions: Union[str, List[str]]):
     
     Usage:
     @app.get("/endpoint")
-    def endpoint(current_user: UserAccount = Depends(has_permission(["permission1", "permission2"]))):
+    async def endpoint(current_user: UserAccount = Depends(has_permission(["permission1", "permission2"]))):
         ...
     """
     if isinstance(required_permissions, str):
         required_permissions = [required_permissions]
     
-    def permission_checker(
+    async def permission_checker(
         current_user: UserAccount = Depends(get_current_active_user),
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
     ) -> UserAccount:
         # Get user role
-        role = db.query(Role).filter(Role.id == current_user.role_id).first()
+        query = select(Role).where(Role.id == current_user.role_id)
+        result = await db.execute(query)
+        role = result.scalar_one_or_none()
+        
         if not role:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -102,15 +108,18 @@ def has_permission(required_permissions: Union[str, List[str]]):
     
     return permission_checker
 
-def is_admin(
+async def is_admin(
     current_user: UserAccount = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ) -> UserAccount:
     """
     Check if the current user is an admin.
     """
     # Get user role
-    role = db.query(Role).filter(Role.id == current_user.role_id).first()
+    query = select(Role).where(Role.id == current_user.role_id)
+    result = await db.execute(query)
+    role = result.scalar_one_or_none()
+    
     if not role or role.name != "Administrator":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

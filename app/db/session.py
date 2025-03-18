@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from app.core.config import settings
 
+print(settings.SQLALCHEMY_DATABASE_URI)
 
 engine = create_async_engine(
     settings.SQLALCHEMY_DATABASE_URI,
@@ -10,7 +11,7 @@ engine = create_async_engine(
     future=True,
 )
 
-async_session_factory = sessionmaker(
+AsyncSessionLocal = sessionmaker(
     engine,
     class_=AsyncSession,
     expire_on_commit=False,
@@ -19,7 +20,7 @@ async_session_factory = sessionmaker(
 )
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    async with async_session_factory() as session:
+    async with AsyncSessionLocal() as session:
         try:
             yield session
             await session.commit()

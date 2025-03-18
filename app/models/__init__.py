@@ -31,8 +31,8 @@ from app.models.security import (
   SecurityIncident, DataBackup, SystemAuditLog
 )
 from app.models.police import (
-  PoliceOfficer, IncidentReport, Complaint as PoliceComplaint,
-  Investigation as PoliceInvestigation, DisciplinaryAction as PoliceDisciplinaryAction,
+  PoliceOfficer, IncidentReport, PoliceComplaint,
+   PoliceInvestigation, PoliceDisciplinaryAction,
   Evidence
 )
 from app.models.crime_reporting import (

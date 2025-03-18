@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.exceptions import setup_exception_handlers
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.logging import logger
 from app.middlewares import (
     RateLimitMiddleware,
@@ -13,8 +14,10 @@ from app.middlewares import (
     SecurityHeadersMiddleware,
     RolePermissionMiddleware,
 )
-from app.db.session import get_db
+from app.db.session import get_db, engine
 from sqlalchemy.orm import Session
+
+from app.models.base import Base
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -61,9 +64,10 @@ async def root():
 
 
 @app.get("/health")
-def health_check(db: Session = Depends(get_db)):
+async def health_check(db: AsyncSession = Depends(get_db)):
     try:
-        db.execute("SELECT 1")
+        # Check database connection
+        await db.execute("SELECT 1")
         return {"status": "healthy", "database": "connected"}
     except Exception as e:
         return {"status": "unhealthy", "database": str(e)}
@@ -89,6 +93,8 @@ main_app_lifespan = app.router.lifespan_context
 @asynccontextmanager
 async def lifespan_wrapper(app: FastAPI):
     logger.info("Application started")
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
     async with main_app_lifespan(app) as maybe_state:
         yield maybe_state
     logger.info("Application shutting down")

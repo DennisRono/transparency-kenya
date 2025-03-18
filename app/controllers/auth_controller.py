@@ -1,26 +1,29 @@
 from typing import Optional
 from datetime import timedelta, datetime
-from sqlalchemy.orm import Session
-import uuid
-
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, update
 from app.models.employee import UserAccount, Role, Employee
 from app.auth.security import get_password_hash, verify_password, create_access_token
 from app.core.config import settings
 from app.schemas import auth_schema
 
-def get_user_by_username(db: Session, username: str) -> Optional[UserAccount]:
+async def get_user_by_username(db: AsyncSession, username: str) -> Optional[UserAccount]:
     """
     Get a user by username.
     """
-    return db.query(UserAccount).filter(UserAccount.username == username).first()
+    query = select(UserAccount).where(UserAccount.username == username)
+    result = await db.execute(query)
+    return result.scalar_one_or_none()
 
-def get_user_by_email(db: Session, email: str) -> Optional[UserAccount]:
+async def get_user_by_email(db: AsyncSession, email: str) -> Optional[UserAccount]:
     """
     Get a user by email.
     """
-    return db.query(UserAccount).filter(UserAccount.email == email).first()
+    query = select(UserAccount).where(UserAccount.email == email)
+    result = await db.execute(query)
+    return result.scalar_one_or_none()
 
-def create_user(db: Session, user: auth_schema.UserCreate, employee_id: int, role_id: int) -> UserAccount:
+async def create_user(db: AsyncSession, user: auth_schema.UserCreate, employee_id: int, role_id: int) -> UserAccount:
     """
     Create a new user account.
     """
@@ -39,15 +42,15 @@ def create_user(db: Session, user: auth_schema.UserCreate, employee_id: int, rol
     )
     
     db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
+    await db.commit()
+    await db.refresh(db_user)
     return db_user
 
-def authenticate(db: Session, username: str, password: str) -> Optional[UserAccount]:
+async def authenticate(db: AsyncSession, username: str, password: str) -> Optional[UserAccount]:
     """
     Authenticate a user.
     """
-    user = get_user_by_username(db, username)
+    user = await get_user_by_username(db, username)
     if not user:
         return None
     if not verify_password(password, user.password_hash):
@@ -59,13 +62,13 @@ def authenticate(db: Session, username: str, password: str) -> Optional[UserAcco
             user.is_locked = True
             user.lock_reason = "Too many failed login attempts"
         
-        db.commit()
+        await db.commit()
         return None
     
     # Reset failed login attempts on successful login
     if user.failed_login_attempts > 0:
         user.failed_login_attempts = 0
-        db.commit()
+        await db.commit()
     
     return user
 
@@ -76,11 +79,14 @@ def create_user_token(user_id: int) -> str:
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return create_access_token(subject=user_id, expires_delta=access_token_expires)
 
-def change_password(db: Session, user_id: int, new_password: str) -> UserAccount:
+async def change_password(db: AsyncSession, user_id: int, new_password: str) -> UserAccount:
     """
     Change a user's password.
     """
-    user = db.query(UserAccount).filter(UserAccount.id == user_id).first()
+    query = select(UserAccount).where(UserAccount.id == user_id)
+    result = await db.execute(query)
+    user = result.scalar_one_or_none()
+    
     if not user:
         return None
     
@@ -88,44 +94,53 @@ def change_password(db: Session, user_id: int, new_password: str) -> UserAccount
     user.password_reset_required = False
     user.last_password_change = datetime.utcnow()
     
-    db.commit()
-    db.refresh(user)
+    await db.commit()
+    await db.refresh(user)
     return user
 
-def update_user_role(db: Session, user_id: int, role_id: int) -> UserAccount:
+async def update_user_role(db: AsyncSession, user_id: int, role_id: int) -> UserAccount:
     """
     Update a user's role.
     """
-    user = db.query(UserAccount).filter(UserAccount.id == user_id).first()
+    query = select(UserAccount).where(UserAccount.id == user_id)
+    result = await db.execute(query)
+    user = result.scalar_one_or_none()
+    
     if not user:
         return None
     
     user.role_id = role_id
     
-    db.commit()
-    db.refresh(user)
+    await db.commit()
+    await db.refresh(user)
     return user
 
-def lock_user(db: Session, user_id: int, reason: str) -> UserAccount:
+async def lock_user(db: AsyncSession, user_id: int, reason: str) -> UserAccount:
     """
     Lock a user account.
     """
-    user = db.query(UserAccount).filter(UserAccount.id == user_id).first()
+    query = select(UserAccount).where(UserAccount.id == user_id)
+    result = await db.execute(query)
+    user = result.scalar_one_or_none()
+    
     if not user:
         return None
     
     user.is_locked = True
     user.lock_reason = reason
     
-    db.commit()
-    db.refresh(user)
+    await db.commit()
+    await db.refresh(user)
     return user
 
-def unlock_user(db: Session, user_id: int) -> UserAccount:
+async def unlock_user(db: AsyncSession, user_id: int) -> UserAccount:
     """
     Unlock a user account.
     """
-    user = db.query(UserAccount).filter(UserAccount.id == user_id).first()
+    query = select(UserAccount).where(UserAccount.id == user_id)
+    result = await db.execute(query)
+    user = result.scalar_one_or_none()
+    
     if not user:
         return None
     
@@ -133,7 +148,6 @@ def unlock_user(db: Session, user_id: int) -> UserAccount:
     user.lock_reason = None
     user.failed_login_attempts = 0
     
-    db.commit()
-    db.refresh(user)
+    await db.commit()
+    await db.refresh(user)
     return user
-

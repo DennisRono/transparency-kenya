@@ -9,7 +9,7 @@ from app.schemas import police_schema
 router = APIRouter()
 
 @router.get("/officers", response_model=List[police_schema.PoliceOfficer])
-def get_police_officers(
+async def get_police_officers(
     skip: int = 0,
     limit: int = 100,
     name: Optional[str] = None,
@@ -25,7 +25,7 @@ def get_police_officers(
     )
 
 @router.post("/officers", response_model=police_schema.PoliceOfficer, status_code=status.HTTP_201_CREATED)
-def create_police_officer(
+async def create_police_officer(
     officer: police_schema.PoliceOfficerCreate,
     db: Session = Depends(get_db)
 ):
@@ -35,7 +35,7 @@ def create_police_officer(
     return police_controller.create_police_officer(db, officer=officer)
 
 @router.get("/officers/{officer_id}", response_model=police_schema.PoliceOfficerDetail)
-def get_police_officer(
+async def get_police_officer(
     officer_id: int,
     db: Session = Depends(get_db)
 ):
@@ -48,7 +48,7 @@ def get_police_officer(
     return db_officer
 
 @router.put("/officers/{officer_id}", response_model=police_schema.PoliceOfficer)
-def update_police_officer(
+async def update_police_officer(
     officer_id: int,
     officer: police_schema.PoliceOfficerUpdate,
     db: Session = Depends(get_db)
@@ -62,7 +62,7 @@ def update_police_officer(
     return police_controller.update_police_officer(db, officer_id=officer_id, officer=officer)
 
 @router.delete("/officers/{officer_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_police_officer(
+async def delete_police_officer(
     officer_id: int,
     db: Session = Depends(get_db)
 ):
@@ -76,7 +76,7 @@ def delete_police_officer(
     return None
 
 @router.get("/complaints", response_model=List[police_schema.PoliceComplaint])
-def get_police_complaints(
+async def get_police_complaints(
     skip: int = 0,
     limit: int = 100,
     status: Optional[str] = None,
@@ -86,12 +86,12 @@ def get_police_complaints(
     """
     Retrieve all police complaints with optional filtering.
     """
-    return police_controller.get_police_complaints(
+    return await police_controller.get_police_complaints(
         db, skip=skip, limit=limit, status=status, officer_id=officer_id
     )
 
 @router.post("/complaints", response_model=police_schema.PoliceComplaint, status_code=status.HTTP_201_CREATED)
-def create_police_complaint(
+async def create_police_complaint(
     complaint: police_schema.PoliceComplaintCreate,
     db: Session = Depends(get_db)
 ):
@@ -101,7 +101,7 @@ def create_police_complaint(
     return police_controller.create_police_complaint(db, complaint=complaint)
 
 @router.get("/complaints/{complaint_id}", response_model=police_schema.PoliceComplaintDetail)
-def get_police_complaint(
+async def get_police_complaint(
     complaint_id: int,
     db: Session = Depends(get_db)
 ):

@@ -2,11 +2,12 @@ from fastapi import Request, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from starlette.middleware.base import BaseHTTPMiddleware
 from jose import jwt, JWTError
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 import json
 import inspect
 
-from app.db.session import get_db
+from app.db.session import AsyncSessionLocal
 from app.models.employee import UserAccount, Role
 from app.core.config import settings
 
@@ -47,24 +48,31 @@ class RolePermissionMiddleware(BaseHTTPMiddleware):
                 return await call_next(request)  # Let the endpoint handle invalid token
             
             # Get user and permissions
-            db = next(get_db())
-            user = db.query(UserAccount).filter(UserAccount.id == user_id).first()
-            if not user:
-                return await call_next(request)
-            
-            # Check if user is active and not locked
-            if not user.is_active or user.is_locked:
-                return await call_next(request)
-            
-            # Parse permissions
-            role = db.query(Role).filter(Role.id == user.role_id).first()
-            if not role:
-                return await call_next(request)
-            
-            try:
-                permissions = json.loads(role.permissions)
-            except:
-                permissions = []
+            async with AsyncSessionLocal() as db:
+                # Get user
+                query = select(UserAccount).where(UserAccount.id == user_id)
+                result = await db.execute(query)
+                user = result.scalar_one_or_none()
+                
+                if not user:
+                    return await call_next(request)
+                
+                # Check if user is active and not locked
+                if not user.is_active or user.is_locked:
+                    return await call_next(request)
+                
+                # Get role and parse permissions
+                query = select(Role).where(Role.id == user.role_id)
+                result = await db.execute(query)
+                role = result.scalar_one_or_none()
+                
+                if not role:
+                    return await call_next(request)
+                
+                try:
+                    permissions = json.loads(role.permissions)
+                except:
+                    permissions = []
             
             # Attach user and permissions to request state
             request.state.user = user
