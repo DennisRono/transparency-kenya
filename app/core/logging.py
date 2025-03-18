@@ -9,7 +9,7 @@ logs_dir.mkdir(parents=True, exist_ok=True)
 
 # Configure logging
 def setup_logging():
-    log_file = logs_dir / f"bebewa_{datetime.now().strftime('%Y-%m-%d')}.log"
+    log_file = logs_dir / f"transparency_{datetime.now().strftime('%Y-%m-%d')}.log"
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -36,7 +36,7 @@ def setup_logging():
         logger.addHandler(logging.NullHandler())
 
     # Create logger
-    logger = logging.getLogger("bebewa_logistics")
+    logger = logging.getLogger("transparency_kenya")
     return logger
 
 

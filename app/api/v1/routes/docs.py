@@ -12,7 +12,6 @@ templates = Jinja2Templates(directory)
 
 @router.get("/", response_class=HTMLResponse)
 def view_documentations(request: Request):
-
     return templates.TemplateResponse(
         "/docs.html",
         {
