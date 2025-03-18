@@ -3,10 +3,10 @@ from enum import Enum
 from typing import Optional, List, TYPE_CHECKING
 from sqlalchemy import String, ForeignKey, Text, DateTime, Enum as SQLEnum, Integer, Boolean, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from models.base import Base
+from app.models.base import Base
 
 if TYPE_CHECKING:
-    from models.employee import UserAccount, Role
+    from app.models.employee import UserAccount, Role
 
 class LoginStatus(str, Enum):
     SUCCESS = "success"

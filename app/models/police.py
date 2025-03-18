@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Optional, List
 from sqlalchemy import String, ForeignKey, Text, Date, DateTime, Enum as SQLEnum, Integer, Float, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from models.base import Base
+from app.models.base import Base
 
 class PoliceRank(str, Enum):
     CONSTABLE = "constable"
@@ -63,7 +63,7 @@ class IncidentReport(Base):
     incident_type: Mapped[IncidentType] = mapped_column(SQLEnum(IncidentType), nullable=False)
     incident_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     location: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[Text] = mapped_column(nullable=False)
+    description: Mapped[str] = mapped_column(nullable=False)
     suspect_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     suspect_contact: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     suspect_id_number: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
@@ -99,7 +99,7 @@ class Complaint(Base):
     complainant_contact: Mapped[str] = mapped_column(String(100), nullable=False)
     complainant_email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     complainant_id_number: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    description: Mapped[Text] = mapped_column(nullable=False)
+    description: Mapped[str] = mapped_column(nullable=False)
     status: Mapped[ComplaintStatus] = mapped_column(SQLEnum(ComplaintStatus), nullable=False, default=ComplaintStatus.SUBMITTED)
     allegation: Mapped[str] = mapped_column(Text, nullable=False)
     attachments: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON string of attachment URLs
@@ -134,8 +134,8 @@ class Investigation(Base):
     investigator_name: Mapped[str] = mapped_column(String(255), nullable=False)
     investigator_contact: Mapped[str] = mapped_column(String(100), nullable=False)
     status: Mapped[InvestigationStatus] = mapped_column(SQLEnum(InvestigationStatus), nullable=False, default=InvestigationStatus.OPEN)
-    findings: Mapped[Optional[Text]] = mapped_column(nullable=True)
-    recommendations: Mapped[Optional[Text]] = mapped_column(nullable=True)
+    findings: Mapped[Optional[str]] = mapped_column(nullable=True)
+    recommendations: Mapped[Optional[str]] = mapped_column(nullable=True)
     evidence: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON string of evidence URLs
     
     # Foreign keys
@@ -161,12 +161,12 @@ class DisciplinaryActionType(str, Enum):
 
 class DisciplinaryAction(Base):
     """Represents a disciplinary action taken against a police officer."""
-    __tablename__ = "disciplinary_actions"
+    __tablename__ = "officer_disciplinary_actions"
     
     action_number: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     action_type: Mapped[DisciplinaryActionType] = mapped_column(SQLEnum(DisciplinaryActionType), nullable=False)
     action_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    description: Mapped[Text] = mapped_column(nullable=False)
+    description: Mapped[str] = mapped_column(nullable=False)
     sanctions: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     appeal_filed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     appeal_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
@@ -199,7 +199,7 @@ class Evidence(Base):
     
     evidence_number: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     evidence_type: Mapped[EvidenceType] = mapped_column(SQLEnum(EvidenceType), nullable=False)
-    description: Mapped[Text] = mapped_column(nullable=False)
+    description: Mapped[str] = mapped_column(nullable=False)
     collection_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     custodian: Mapped[str] = mapped_column(String(255), nullable=False)
     location: Mapped[str] = mapped_column(String(255), nullable=False)

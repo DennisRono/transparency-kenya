@@ -3,11 +3,11 @@ from enum import Enum
 from typing import Optional, List, TYPE_CHECKING
 from sqlalchemy import String, ForeignKey, Text, DateTime, Enum as SQLEnum, Integer, Float, Boolean, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from models.base import Base
+from app.models.base import Base
 
 if TYPE_CHECKING:
-    from models.police import PoliceOfficer
-    from models.employee import Employee
+    from app.models.police import PoliceOfficer
+    from app.models.employee import Employee
 
 class CrimeType(str, Enum):
     THEFT = "theft"
@@ -194,7 +194,7 @@ class ReportStatusUpdate(Base):
 
 class EmergencyContact(Base):
     """Represents emergency contacts for the crime reporting system."""
-    __tablename__ = "emergency_contacts"
+    __tablename__ = "help_emergency_contacts"
     
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     service_type: Mapped[str] = mapped_column(String(100), nullable=False)  # Police, Ambulance, Fire, etc.

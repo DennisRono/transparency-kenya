@@ -1,41 +1,41 @@
-from models.base import Base
-from models.government import (
+from app.models.base import Base
+from app.models.government import (
   Ministry, Department, Agency, County, SubCounty, Ward,
   Project, Program, Committee, TaskForce, PublicAsset, Infrastructure
 )
-from models.employee import (
+from app.models.employee import (
   Employee, Position, EmploymentHistory, Role, UserAccount,
   Qualification, Education, Training, Attendance, Leave,
   DisciplinaryAction, Benefit, Allowance, EmergencyContact
 )
-from models.finance import (
+from app.models.finance import (
   Salary, Budget, Expenditure, Revenue, Transaction, Audit,
-  Grant, Donation, Loan, Debt, Investment, TaxCollection,
+  Grant, Donation, Loan, Investment, TaxCollection,
   Asset, AssetCategory, AssetMovement, AssetMaintenance,
   Procurement, Contract, ContractPayment, Vendor, Invoice
 )
-from models.performance import (
+from app.models.performance import (
   PerformanceReview, PerformanceMetric, PerformanceGoal,
   TeamPerformance, DepartmentPerformance, ServiceDeliveryMetric
 )
-from models.public import (
+from app.models.public import (
   Complaint, Feedback, PublicParticipation, InformationRequest,
   ServiceRating, CitizenSatisfactionSurvey, PublicMeeting
 )
-from models.compliance import (
+from app.models.compliance import (
   ComplianceRequirement, ComplianceReport, Audit as ComplianceAudit,
   Investigation, RiskAssessment, RiskRegister, Policy, Regulation
 )
-from models.security import (
+from app.models.security import (
   LoginAttempt, SecurityLog, AccessControlList, SystemSetting,
   SecurityIncident, DataBackup, SystemAuditLog
 )
-from models.police import (
+from app.models.police import (
   PoliceOfficer, IncidentReport, Complaint as PoliceComplaint,
   Investigation as PoliceInvestigation, DisciplinaryAction as PoliceDisciplinaryAction,
   Evidence
 )
-from models.crime_reporting import (
+from app.models.crime_reporting import (
   CrimeReport, MediaEvidence, WitnessStatement, ReportStatusUpdate,
   EmergencyContact as CrimeEmergencyContact, SafetyAlert
 )
@@ -51,7 +51,7 @@ __all__ = [
   "DisciplinaryAction", "Benefit", "Allowance", "EmergencyContact",
   # Finance
   "Salary", "Budget", "Expenditure", "Revenue", "Transaction", "Audit",
-  "Grant", "Donation", "Loan", "Debt", "Investment", "TaxCollection",
+  "Grant", "Donation", "Loan", "Investment", "TaxCollection",
   "Asset", "AssetCategory", "AssetMovement", "AssetMaintenance",
   "Procurement", "Contract", "ContractPayment", "Vendor", "Invoice",
   # Performance

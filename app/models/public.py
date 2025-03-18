@@ -3,10 +3,10 @@ from enum import Enum
 from typing import Optional, List, TYPE_CHECKING
 from sqlalchemy import String, ForeignKey, Text, Date, DateTime, Enum as SQLEnum, Integer, Float, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from models.base import Base
+from app.models.base import Base
 
 if TYPE_CHECKING:
-    from models.employee import Employee
+    from app.models.employee import Employee
 
 class ComplaintStatus(str, Enum):
     SUBMITTED = "submitted"

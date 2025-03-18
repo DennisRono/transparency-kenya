@@ -3,10 +3,10 @@ from enum import Enum
 from typing import Optional, List, TYPE_CHECKING
 from sqlalchemy import String, ForeignKey, Text, Date, Enum as SQLEnum, UniqueConstraint, Integer, Float, Boolean, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from models.base import Base
+from app.models.base import Base
 
 if TYPE_CHECKING:
-    from models.employee import Employee, UserAccount
+    from app.models.employee import Employee, UserAccount
 
 class TransactionType(str, Enum):
     INCOME = "income"

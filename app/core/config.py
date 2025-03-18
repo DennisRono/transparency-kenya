@@ -47,6 +47,23 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
     LOG_FORMAT: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
+    # File upload settings
+    UPLOAD_DIR: str = "uploads"
+    MAX_UPLOAD_SIZE: int = 50 * 1024 * 1024  # 50 MB
+
+    # Email settings for notifications
+    SMTP_TLS: bool = True
+    SMTP_PORT: Optional[int] = None
+    SMTP_HOST: Optional[str] = None
+    SMTP_USER: Optional[str] = None
+    SMTP_PASSWORD: Optional[str] = None
+    EMAILS_FROM_EMAIL: Optional[str] = None
+    EMAILS_FROM_NAME: Optional[str] = None
+
+    # Pagination defaults
+    DEFAULT_PAGE_SIZE: int = 100
+    MAX_PAGE_SIZE: int = 1000
+
     # Rate Limiting
     RATE_LIMIT_ENABLED: bool = True
     RATE_LIMIT_DEFAULT_LIMIT: int = 100

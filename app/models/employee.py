@@ -3,12 +3,12 @@ from enum import Enum
 from typing import Optional, List, TYPE_CHECKING
 from sqlalchemy import String, ForeignKey, Text, Date, Boolean, Enum as SQLEnum, Time, Integer, Float, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from models.base import Base
+from app.models.base import Base
 
 if TYPE_CHECKING:
-    from models.performance import PerformanceReview
-    from models.finance import Salary
-    from models.security import LoginAttempt
+    from app.models.performance import PerformanceReview
+    from app.models.finance import Salary
+    from app.models.security import LoginAttempt
 
 class Gender(str, Enum):
     MALE = "male"
@@ -424,7 +424,7 @@ class DisciplinaryStatus(str, Enum):
 
 class DisciplinaryAction(Base):
     """Represents a disciplinary action taken against an employee."""
-    __tablename__ = "disciplinary_actions"
+    __tablename__ = "employee_disciplinary_actions"
     
     action_type: Mapped[DisciplinaryType] = mapped_column(SQLEnum(DisciplinaryType), nullable=False)
     incident_date: Mapped[date] = mapped_column(Date, nullable=False)
@@ -527,10 +527,10 @@ class Allowance(Base):
 
 class EmergencyContact(Base):
     """Represents an emergency contact for an employee."""
-    __tablename__ = "emergency_contacts"
+    __tablename__ = "employee_emergency_contacts"
     
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    relationship: Mapped[str] = mapped_column(String(100), nullable=False)
+    _relationship: Mapped[str] = mapped_column(String(100), nullable=False)
     phone_number: Mapped[str] = mapped_column(String(20), nullable=False)
     alternative_phone: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
     email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
@@ -544,5 +544,5 @@ class EmergencyContact(Base):
     employee: Mapped["Employee"] = relationship(back_populates="emergency_contacts")
     
     def __repr__(self) -> str:
-        return f"<EmergencyContact(name='{self.name}', relationship='{self.relationship}', employee_id={self.employee_id})>"
+        return f"<EmergencyContact(name='{self.name}', relationship='{self._relationship}', employee_id={self.employee_id})>"
 

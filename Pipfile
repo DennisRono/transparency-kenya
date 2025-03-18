@@ -8,6 +8,10 @@ sqlalchemy = "*"
 fastapi = {extras = ["standard"], version = "*"}
 apscheduler = "*"
 pydantic-settings = "*"
+python-jose = "*"
+passlib = "*"
+aiofiles = "*"
+asyncpg = "*"
 
 [dev-packages]
 

@@ -1,14 +1,20 @@
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.exceptions import setup_exception_handlers
 from app.core.logging import logger
-from app.core.middleware import (RateLimitMiddleware, RequestLoggingMiddleware,
-                                 SecurityHeadersMiddleware)
+from app.middlewares import (
+    RateLimitMiddleware,
+    RequestLoggingMiddleware,
+    SecurityHeadersMiddleware,
+    RolePermissionMiddleware,
+)
+from app.db.session import get_db
+from sqlalchemy.orm import Session
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -33,6 +39,7 @@ if settings.ENVIRONMENT == "production":
     app.add_middleware(RequestLoggingMiddleware)
     app.add_middleware(RateLimitMiddleware)
     app.add_middleware(SecurityHeadersMiddleware)
+    app.add_middleware(RolePermissionMiddleware)
 
 # Set up exception handlers
 setup_exception_handlers(app)
@@ -49,7 +56,17 @@ async def root():
         "status": "healthy",
         "version": settings.VERSION,
         "environment": settings.ENVIRONMENT,
+        "documentation": "api/v1/docs",
     }
+
+
+@app.get("/health")
+def health_check(db: Session = Depends(get_db)):
+    try:
+        db.execute("SELECT 1")
+        return {"status": "healthy", "database": "connected"}
+    except Exception as e:
+        return {"status": "unhealthy", "database": str(e)}
 
 
 def run_daily():

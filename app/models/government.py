@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Optional, List
 from sqlalchemy import String, ForeignKey, Text, Integer, Float, Date, Boolean, Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from models.base import Base
+from app.models.base import Base
 
 class Ministry(Base):
     """Represents a government ministry."""
