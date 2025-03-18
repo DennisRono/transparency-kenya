@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>{{ title|default("API Explorer")}} | Provisioning Docs</title>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="upgrade-insecure-requests"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Interactive API documentation powered by RapiDoc"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <script
+      type="module"
+      src="https://cdn.jsdelivr.net/npm/rapidoc@latest/dist/rapidoc-min.js"
+    ></script>
+    <style>
+      :root {
+        --nav-text: #e2e8f0;
+        --nav-hover-bg: #1e293b;
+        --nav-hover-text: #ffffff;
+        --nav-accent: #3b82f6;
+        --nav-accent-text: #ffffff;
+        --main-bg: #0f172a;
+        --main-text: #e2e8f0;
+        --code-bg: #1e293b;
+        --code-text: #e2e8f0;
+        --get-method: #22c55e;
+        --post-method: #3b82f6;
+        --put-method: #f59e0b;
+        --delete-method: #ef4444;
+        --patch-method: #8b5cf6;
+        --button-bg: #3b82f6;
+        --button-text: #ffffff;
+        --button-hover-bg: #2563eb;
+        --button-active-bg: #1d4ed8;
+        --button-secondary-bg: #475569;
+        --button-secondary-text: #ffffff;
+        --button-secondary-hover-bg: #334155;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Inter', sans-serif;
+        background-color: var(--main-bg);
+        color: var(--main-text);
+      }
+
+      rapi-doc {
+        --border-radius: 6px;
+        --layout-gap: 24px;
+        --font-size-regular: 14px;
+        --font-size-small: 12px;
+        --font-size-mono: 13px;
+        --font-weight-regular: 400;
+        --font-weight-medium: 500;
+        --font-weight-bold: 600;
+
+        --primary-color: #3b82f6;
+        --secondary-color: #10b981;
+        --bg-color: var(--main-bg);
+        --text-color: var(--main-text);
+        --header-bg: #1e293b;
+        --header-color: #f8fafc;
+        --nav-bg-color: #0f172a;
+        --nav-text-color: var(--nav-text);
+        --nav-hover-bg-color: var(--nav-hover-bg);
+        --nav-hover-text-color: var(--nav-hover-text);
+        --nav-accent-color: var(--nav-accent);
+        --nav-accent-text-color: var(--nav-accent-text);
+
+        --get-color: var(--get-method);
+        --post-color: var(--post-method);
+        --put-color: var(--put-method);
+        --delete-color: var(--delete-method);
+        --patch-color: var(--patch-method);
+
+        --primary-btn-bg: var(--button-bg);
+        --primary-btn-text-color: var(--button-text);
+        --primary-btn-hover-bg: var(--button-hover-bg);
+        --primary-btn-focus-bg: var(--button-active-bg);
+
+        --secondary-btn-bg: var(--button-secondary-bg);
+        --secondary-btn-text-color: var(--button-secondary-text);
+        --secondary-btn-hover-bg: var(--button-secondary-hover-bg);
+
+        --try-btn-bg: var(--button-bg);
+        --try-btn-text-color: var(--button-text);
+        --try-btn-hover-bg: var(--button-hover-bg);
+
+        --header-btn-bg: var(--button-secondary-bg);
+        --header-btn-text-color: var(--button-secondary-text);
+        --header-btn-hover-bg: var(--button-secondary-hover-bg);
+
+        --code-bg-color: var(--code-bg);
+        --code-text-color: var(--code-text);
+
+        --font-regular: 'Inter', sans-serif;
+        --font-mono: 'JetBrains Mono', monospace;
+      }
+
+      button.custom-btn {
+        background-color: var(--button-bg);
+        color: var(--button-text);
+        border: none;
+        border-radius: 4px;
+        padding: 8px 16px;
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+      }
+
+      button.custom-btn:hover {
+        background-color: var(--button-hover-bg);
+      }
+
+      button.custom-btn:active {
+        background-color: var(--button-active-bg);
+      }
+
+      button.custom-btn.secondary {
+        background-color: var(--button-secondary-bg);
+        color: var(--button-secondary-text);
+      }
+
+      button.custom-btn.secondary:hover {
+        background-color: var(--button-secondary-hover-bg);
+      }
+
+      .loader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: var(--main-bg);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        transition: opacity 0.3s ease-out;
+      }
+
+      .loader.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        border-top-color: #3b82f6;
+        animation: spin 1s ease-in-out infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .header-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 10px;
+      }
+
+      .header-logo img {
+        height: 32px;
+        width: auto;
+      }
+
+      .header-logo span {
+        font-weight: 600;
+        font-size: 16px;
+        color: #f8fafc;
+      }
+
+      .custom-footer {
+        padding: 20px;
+        text-align: center;
+        font-size: 12px;
+        color: var(--nav-text);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .theme-toggle {
+        background: transparent;
+        border: 1px solid var(--button-secondary-bg);
+        border-radius: 4px;
+        color: var(--button-text);
+        font-size: 18px;
+        cursor: pointer;
+        padding: 4px 8px;
+        margin-left: auto;
+        margin-right: 10px;
+        transition: background-color 0.2s ease;
+      }
+
+      .theme-toggle:hover {
+        background-color: var(--button-secondary-hover-bg);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Loading spinner -->
+    <div class="loader" id="loader">
+      <div class="spinner"></div>
+    </div>
+
+    <rapi-doc
+      spec-url="{{ schema_url }}"
+      theme="dark"
+      bg-color="#0f172a"
+      text-color="#e2e8f0"
+      header-color="#1e293b"
+      primary-color="#3b82f6"
+      nav-bg-color="#0f172a"
+      nav-text-color="#e2e8f0"
+      nav-hover-bg-color="#1e293b"
+      nav-hover-text-color="#ffffff"
+      nav-accent-color="#3b82f6"
+      nav-accent-text-color="#ffffff"
+      render-style="read"
+      schema-style="table"
+      schema-description-expanded="true"
+      show-header="true"
+      heading-text="{{ title|default('API Explorer') }}"
+      allow-authentication="true"
+      allow-server-selection="true"
+      allow-spec-url-load="true"
+      allow-spec-file-load="true"
+      allow-spec-file-download="true"
+      allow-search="true"
+      allow-advanced-search="true"
+      allow-try="true"
+      persist-auth="true"
+      show-curl-before-try="true"
+      update-route="true"
+      layout="row"
+      response-area-height="400px"
+      show-method-in-nav-bar="as-colored-block"
+      nav-item-spacing="relaxed"
+      default-schema-tab="example"
+      sort-tags="true"
+      sort-endpoints-by="path"
+      info-description-headings-in-navbar="true"
+      schema-expand-level="2"
+      fetch-credentials="include"
+      id="api-doc"
+    >
+      <div slot="logo" class="header-logo">
+        <img
+          src="https://nullchemy.com/static/media/nullchemy_new_logo_3d.238319aebab004ffd436.png"
+          alt="Logo"
+        />
+        <span>{{ title|default("API Explorer") }}</span>
+      </div>
+
+      <div slot="footer" class="custom-footer">
+        <p>
+          © {{ current_year|default("2025") }} Transparency Kenya. All rights
+          reserved.
+        </p>
+        <p>API Version: {{ api_version|default("1.0.0") }}</p>
+        <div
+          style="
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+          "
+        >
+        </div>
+      </div>
+    </rapi-doc>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const rapidocEl = document.getElementById('api-doc')
+        const loader = document.getElementById('loader')
+
+        rapidocEl.addEventListener('spec-loaded', () => {
+          loader.classList.add('hidden')
+          setTimeout(() => {
+            loader.style.display = 'none'
+          }, 300)
+
+          const styleButtons = () => {
+            try {
+              const shadow = rapidocEl.shadowRoot
+
+              const buttons = shadow.querySelectorAll('button')
+
+              buttons.forEach((button) => {
+                if (button.classList.contains('styled')) return
+
+                if (button.classList.contains('m-btn')) {
+                  button.style.backgroundColor = '#3b82f6'
+                  button.style.color = '#ffffff'
+                  button.style.border = 'none'
+                  button.style.borderRadius = '4px'
+                  button.style.fontWeight = '500'
+                } else if (button.textContent.trim().toLowerCase() === 'try') {
+                  button.style.backgroundColor = '#3b82f6'
+                  button.style.color = '#ffffff'
+                  button.style.border = 'none'
+                  button.style.borderRadius = '4px'
+                  button.style.fontWeight = '500'
+                } else if (
+                  button.textContent.trim().toLowerCase() === 'cancel'
+                ) {
+                  button.style.backgroundColor = '#475569'
+                  button.style.color = '#ffffff'
+                  button.style.border = 'none'
+                  button.style.borderRadius = '4px'
+                }
+
+                button.classList.add('styled')
+              })
+            } catch (e) {
+              console.error('Error styling buttons:', e)
+            }
+          }
+
+          setTimeout(styleButtons, 500)
+
+          const observer = new MutationObserver(() => {
+            setTimeout(styleButtons, 100)
+          })
+
+          if (rapidocEl.shadowRoot) {
+            observer.observe(rapidocEl.shadowRoot, {
+              childList: true,
+              subtree: true,
+            })
+          }
+        })
+
+        rapidocEl.addEventListener('before-try', (e) => {
+          e.detail.request.headers.append('X-Client-Version', '1.0.0')
+
+          console.log('Making request:', {
+            method: e.detail.request.method,
+            url: e.detail.request.url,
+            headers: Object.fromEntries([...e.detail.request.headers]),
+          })
+        })
+
+        rapidocEl.addEventListener('after-try', (e) => {
+          if (e.detail.response) {
+            console.log('Response received:', {
+              status: e.detail.response.status,
+              statusText: e.detail.response.statusText,
+            })
+          } else if (e.detail.err) {
+            console.error('Request error:', e.detail.err)
+          }
+        })
+
+        document.addEventListener('keydown', (e) => {
+          if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+            e.preventDefault()
+            const searchInput = document
+              .querySelector('rapi-doc')
+              .shadowRoot.querySelector('.search-input')
+            if (searchInput) searchInput.focus()
+          }
+        })
+
+        if (
+          window.location.hostname === 'localhost' ||
+          window.location.hostname === '127.0.0.1'
+        ) {
+          rapidocEl.addEventListener('spec-loaded', () => {
+            const apiBase = `${window.location.protocol}//${window.location.hostname}:${window.location.port}/api`
+            rapidocEl.setApiServer(apiBase)
+          })
+        }
+
+        const toggleTheme = () => {
+          const isDark = rapidocEl.getAttribute('theme') === 'dark'
+          if (isDark) {
+            rapidocEl.setAttribute('theme', 'light')
+            rapidocEl.setAttribute('bg-color', '#ffffff')
+            rapidocEl.setAttribute('text-color', '#333333')
+            rapidocEl.setAttribute('header-color', '#f0f4f8')
+            rapidocEl.setAttribute('nav-bg-color', '#f8fafc')
+            rapidocEl.setAttribute('nav-text-color', '#1e293b')
+            rapidocEl.setAttribute('nav-hover-bg-color', '#e2e8f0')
+            rapidocEl.setAttribute('nav-hover-text-color', '#0f172a')
+            document.body.style.backgroundColor = '#ffffff'
+            document.body.style.color = '#333333'
+          } else {
+            rapidocEl.setAttribute('theme', 'dark')
+            rapidocEl.setAttribute('bg-color', '#0f172a')
+            rapidocEl.setAttribute('text-color', '#e2e8f0')
+            rapidocEl.setAttribute('header-color', '#1e293b')
+            rapidocEl.setAttribute('nav-bg-color', '#0f172a')
+            rapidocEl.setAttribute('nav-text-color', '#e2e8f0')
+            rapidocEl.setAttribute('nav-hover-bg-color', '#1e293b')
+            rapidocEl.setAttribute('nav-hover-text-color', '#ffffff')
+            document.body.style.backgroundColor = '#0f172a'
+            document.body.style.color = '#e2e8f0'
+          }
+        }
+
+        const createThemeToggle = () => {
+          const header = rapidocEl.shadowRoot.querySelector('header')
+          if (header) {
+            const themeToggle = document.createElement('button')
+            themeToggle.textContent = '🌓'
+            themeToggle.className = 'theme-toggle'
+            themeToggle.title = 'Toggle Light/Dark Theme'
+            themeToggle.addEventListener('click', toggleTheme)
+            header.appendChild(themeToggle)
+          }
+        }
+
+        setTimeout(createThemeToggle, 1000)
+      })
+    </script>
+  </body>
+</html>

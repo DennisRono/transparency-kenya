@@ -1,0 +1,112 @@
+# Transparency Kenya Project Context
+
+## Project Background
+
+The Transparency Kenya project was initiated to create a comprehensive government management system that enhances transparency, accountability, and efficiency in public administration. The primary focus is on preventing corruption, ensuring proper resource allocation, and enabling citizen oversight of government operations.
+
+## Development Approach
+
+The system has been designed using a modular approach with SQLAlchemy's Object-Relational Mapping (ORM) to create a robust and flexible database schema. The development followed these principles:
+
+1. **Comprehensive Coverage**: Ensuring all aspects of government operations are tracked
+2. **Audit Trails**: Maintaining detailed records of all changes and actions
+3. **Accountability**: Clear tracking of responsibilities and authorizations
+4. **Citizen Engagement**: Multiple channels for public participation and oversight
+5. **Data Integrity**: Strong validation and verification processes
+6. **Security**: Robust access controls and audit logging
+
+## Key Features Implemented
+
+### 1. Government Structure Tracking
+
+A complete hierarchical model of government from ministries down to wards, with tracking of projects, programs, committees, and public assets.
+
+### 2. Employee Management
+
+Comprehensive employee records including qualifications, performance, attendance, and disciplinary actions.
+
+### 3. Financial Management
+
+Detailed tracking of budgets, expenditures, revenues, assets, procurement, and contracts.
+
+### 4. Performance Monitoring
+
+Multi-level performance tracking from individual employees to departments and service delivery.
+
+### 5. Public Interaction
+
+Systems for complaints, feedback, public participation, and information requests.
+
+### 6. Compliance Management
+
+Tracking of regulatory requirements, compliance status, audits, and risk assessments.
+
+### 7. System Security
+
+Robust security controls, access management, and audit logging.
+
+### 8. Police Accountability
+
+Tracking of police officers, incidents, complaints, investigations, and disciplinary actions to prevent abuse of power.
+
+### 9. Real-time Crime Reporting
+
+Citizen-facing system for reporting crimes, submitting multimedia evidence, and tracking case progress.
+
+## Design Decisions
+
+### Database Schema
+
+- Used SQLAlchemy's modern mapped_column approach for type safety and better IDE support
+- Implemented soft delete functionality across all tables
+- Created comprehensive audit trails for all significant actions
+- Used enumerations for consistent status and type values
+- Implemented flexible organizational placement with optional foreign keys
+
+### Police Accountability
+
+The police accountability module was specifically designed to:
+- Track individual officer conduct
+- Document incidents involving officers
+- Process complaints against officers
+- Conduct thorough investigations
+- Implement appropriate disciplinary measures
+- Store and manage evidence securely
+
+### Crime Reporting System
+
+The real-time crime reporting system was designed to:
+- Allow anonymous reporting for citizen safety
+- Support various media formats as evidence
+- Provide location tracking for accurate response
+- Enable witness statements collection
+- Track report status with notifications
+- Integrate with the police response system
+
+## Current Status
+
+The database schema has been fully designed and implemented using SQLAlchemy ORM. This includes:
+
+- 9 core modules with over 60 tables
+- Comprehensive relationships between entities
+- Type-safe column definitions
+- Enumerated types for consistent data
+- Audit trails and tracking mechanisms
+
+## Next Steps
+
+1. **API Development**: Create RESTful API endpoints for all major functions
+2. **Authentication System**: Implement role-based access control
+3. **Frontend Development**: Build user interfaces for different stakeholders
+4. **Mobile Application**: Develop mobile apps for citizen reporting
+5. **Reporting System**: Create analytics and reporting capabilities
+6. **Integration**: Connect with other government systems
+7. **Testing**: Comprehensive testing of all components
+8. **Deployment**: Production deployment and monitoring setup
+
+## Technical Considerations
+
+- The system is designed to be database-agnostic and can work with PostgreSQL, MySQL, or SQLite
+- The schema includes appropriate indexes for performance optimization
+- The design supports horizontal scaling for high availability
+- Security considerations include data encryption, access controls, and audit logging
