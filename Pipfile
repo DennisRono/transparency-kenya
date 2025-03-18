@@ -12,6 +12,7 @@ python-jose = "*"
 passlib = "*"
 aiofiles = "*"
 asyncpg = "*"
+alembic = "*"
 
 [dev-packages]
 

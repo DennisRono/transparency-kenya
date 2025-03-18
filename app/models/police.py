@@ -80,6 +80,25 @@ class IncidentStatus(str, Enum):
     REFERRED = "referred"
     REOPENED = "reopened"
 
+class PoliceStation(Base):
+    """Represents a police station."""
+    __tablename__ = "police_stations"
+
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    location: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    contact_number: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    address: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    established_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    ocs_id: Mapped[Optional[int]] = mapped_column(ForeignKey("police_officers.id"), nullable=True)
+    
+    # Relationships
+    officers: Mapped[List["PoliceOfficer"]] = relationship("PoliceOfficer", back_populates="station")
+    ocs: Mapped[Optional["PoliceOfficer"]] = relationship("PoliceOfficer", foreign_keys=[ocs_id], back_populates="ocs")
+    
+    def __repr__(self) -> str:
+        return f"<PoliceStation(id={self.id}, name='{self.name}')>"
+
 class PoliceOfficer(Base):
     """Represents a police officer."""
     __tablename__ = "police_officers"
@@ -112,6 +131,8 @@ class PoliceOfficer(Base):
     disciplinary_actions: Mapped[List["PoliceDisciplinaryAction"]] = relationship(back_populates="officer")
     reported_incidents: Mapped[List["IncidentReport"]] = relationship("IncidentReport", foreign_keys="[IncidentReport.reporting_officer_id]", back_populates="reporting_officer")
     supervised_incidents: Mapped[List["IncidentReport"]] = relationship("IncidentReport", foreign_keys="[IncidentReport.supervisor_id]", back_populates="supervisor")
+    station: Mapped["PoliceStation"] = relationship("PoliceStation", back_populates="officers")
+    ocs: Mapped["PoliceStation"] = relationship("PoliceStation", foreign_keys=[PoliceStation.ocs_id], back_populates="ocs")
     
     def __repr__(self) -> str:
         return f"<PoliceOfficer(service_number='{self.service_number}', name='{self.first_name} {self.last_name}', rank='{self.rank}')>"
