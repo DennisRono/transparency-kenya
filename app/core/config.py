@@ -48,7 +48,7 @@ class Settings(BaseSettings):
     LOG_FORMAT: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
     # File upload settings
-    UPLOAD_DIR: str = "uploads"
+    UPLOAD_DIR: str = "/tmp/uploads"
     MAX_UPLOAD_SIZE: int = 50 * 1024 * 1024  # 50 MB
 
     # Email settings for notifications

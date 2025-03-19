@@ -12,7 +12,7 @@ from app.models.crime_reporting import CrimeReport, MediaEvidence, WitnessStatem
 from app.schemas import crime_report_schema
 
 # Create upload directory if it doesn't exist
-UPLOAD_DIR = Path("uploads/evidence")
+UPLOAD_DIR = Path("/tmp/uploads/evidence")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 async def get_crime_report(db: AsyncSession, report_id: int):
@@ -156,7 +156,7 @@ async def add_media_evidence(db: AsyncSession, report_id: int, file: UploadFile,
     db_evidence = MediaEvidence(
         evidence_id=evidence_id,
         media_type=media_type,
-        file_url=f"/uploads/evidence/{file_name}",
+        file_url=f"/tmp/uploads/evidence/{file_name}",
         file_name=file.filename,
         file_size_kb=file_size,
         mime_type=content_type,

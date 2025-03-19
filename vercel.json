@@ -1,0 +1,17 @@
+{
+    "builds": [{ "src": "app/main.py", "use": "@vercel/python" }],
+    "routes": [
+      { "src": "/ws", "dest": "app/main.py" },
+      {
+        "src": "/ws/(.*)",
+        "dest": "app/main.py",
+        "headers": {
+          "Connection": "Upgrade",
+          "Upgrade": "websocket"
+        }
+      },
+      { "src": "/(.*)", "dest": "app/main.py" }
+    ],
+    "devCommand": "uvicorn app.main:app --reload"
+  }
+  

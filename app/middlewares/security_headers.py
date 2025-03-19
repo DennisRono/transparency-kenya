@@ -5,6 +5,10 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
+
+        if request.url.path.startswith("/api/v1/docs") or request.url.path.startswith("/api/v1/openapi.json"):
+            return await call_next(request)
+        
         response = await call_next(request)
 
         response.headers["X-Content-Type-Options"] = "nosniff"

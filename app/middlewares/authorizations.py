@@ -27,6 +27,7 @@ class RolePermissionMiddleware(BaseHTTPMiddleware):
             "/redoc",
             "/openapi.json",
             "/health",
+            "/api/v1/docs"
         ]:
             return await call_next(request)
         
