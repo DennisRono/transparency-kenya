@@ -1,4 +1,5 @@
 import json
+import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from datetime import datetime
@@ -59,6 +60,7 @@ async def create_roles(db: AsyncSession) -> None:
     
     # Create admin role
     admin_role = Role(
+        id=uuid.uuid4(),
         name="Administrator",
         description="System administrator with full access to all functionality",
         permissions=json.dumps(ADMIN_PERMISSIONS),
@@ -69,6 +71,7 @@ async def create_roles(db: AsyncSession) -> None:
     
     # Create manager role
     manager_role = Role(
+        id=uuid.uuid4(),
         name="Manager",
         description="Department or unit manager with access to manage their areas",
         permissions=json.dumps(MANAGER_PERMISSIONS),
@@ -79,6 +82,7 @@ async def create_roles(db: AsyncSession) -> None:
     
     # Create officer role
     officer_role = Role(
+        id=uuid.uuid4(),
         name="Officer",
         description="Regular government officer with standard access",
         permissions=json.dumps(OFFICER_PERMISSIONS),
@@ -89,6 +93,7 @@ async def create_roles(db: AsyncSession) -> None:
     
     # Create public role
     public_role = Role(
+        id=uuid.uuid4(),
         name="Public",
         description="Public user with limited access",
         permissions=json.dumps(PUBLIC_PERMISSIONS),
@@ -114,6 +119,7 @@ async def get_or_create_admin_position(db: AsyncSession) -> Position:
     
     # Create position
     admin_position = Position(
+        id=uuid.uuid4(),
         title="System Administrator",
         code="ADMIN",
         description="System administrator with technical responsibilities",
@@ -134,7 +140,7 @@ async def get_or_create_admin_position(db: AsyncSession) -> Position:
     logger.info("Created admin position")
     return admin_position
 
-async def get_or_create_admin_employee(db: AsyncSession, position_id: int) -> Employee:
+async def get_or_create_admin_employee(db: AsyncSession, position_id: uuid.UUID) -> Employee:
     """
     Get or create the admin employee.
     """
@@ -148,6 +154,7 @@ async def get_or_create_admin_employee(db: AsyncSession, position_id: int) -> Em
     
     # Create employee
     admin_employee = Employee(
+        id=uuid.uuid4(),
         first_name="System",
         last_name="Administrator",
         gender=Gender.OTHER,
@@ -180,7 +187,7 @@ async def get_or_create_admin_employee(db: AsyncSession, position_id: int) -> Em
     logger.info("Created admin employee")
     return admin_employee
 
-async def get_or_create_admin_user(db: AsyncSession, employee_id: int) -> UserAccount:
+async def get_or_create_admin_user(db: AsyncSession, employee_id: uuid.UUID) -> UserAccount:
     """
     Get or create the admin user.
     """
@@ -203,6 +210,7 @@ async def get_or_create_admin_user(db: AsyncSession, employee_id: int) -> UserAc
     # Create user
     hashed_password = get_password_hash("admin123") # Default password, should be changed
     admin_user = UserAccount(
+        id=uuid.uuid4(),
         username="admin",
         email="admin@example.com",
         password_hash=hashed_password,
@@ -224,4 +232,3 @@ if __name__ == "__main__":
     logger.info("Creating initial database data...")
     asyncio.run(init_db())
     logger.info("Initial database data created successfully")
-

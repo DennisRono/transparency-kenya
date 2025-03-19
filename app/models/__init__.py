@@ -1,76 +1,96 @@
+from typing import TYPE_CHECKING
+
+# Import Base first
 from app.models.base import Base
-from app.models.government import (
-  Ministry, Department, Agency, County, SubCounty, Ward,
-  Project, Program, Committee, TaskForce, PublicAsset, Infrastructure
-)
+
+# Import models without circular dependencies first
 from app.models.employee import (
-  Employee, Position, EmploymentHistory, Role, UserAccount,
-  Qualification, Education, Training, Attendance, Leave,
-  DisciplinaryAction, Benefit, Allowance, EmergencyContact
+    Gender, EmploymentStatus, MaritalStatus, EducationLevel,
+    QualificationType, TrainingStatus, LeaveType, LeaveStatus,
+    DisciplinaryType, DisciplinaryStatus, BenefitType, AllowanceType,
+    Position, Role, Employee, UserAccount, EmploymentHistory,
+    Qualification, Education, Training, Attendance, Leave,
+    DisciplinaryAction, Benefit, Allowance, EmployeeEmergencyContact
 )
-from app.models.finance import (
-  Salary, Budget, Expenditure, Revenue, Transaction, Audit,
-  Grant, Donation, Loan, Investment, TaxCollection,
-  Asset, AssetCategory, AssetMovement, AssetMaintenance,
-  Procurement, Contract, ContractPayment, Vendor, Invoice
+
+# Import models with fewer dependencies
+from app.models.government import (
+    Ministry, Department, Division, Agency, 
+    County, SubCounty, Ward, Project, Policy as GovernmentPolicy
 )
+
 from app.models.performance import (
-  PerformanceReview, PerformanceMetric, PerformanceGoal,
-  TeamPerformance, DepartmentPerformance, ServiceDeliveryMetric
+    PerformanceRating, GoalStatus, ReviewStatus,
+    PerformanceReview, PerformanceMetric, PerformanceGoal,
+    TeamPerformance, DepartmentPerformance, ServiceDeliveryMetric
 )
-from app.models.public import (
-  Complaint, Feedback, PublicParticipation, InformationRequest,
-  ServiceRating, CitizenSatisfactionSurvey, PublicMeeting
-)
+
 from app.models.compliance import (
-  ComplianceRequirement, ComplianceReport, Audit as ComplianceAudit,
-  Investigation, RiskAssessment, RiskRegister, Policy, Regulation
+    ComplianceStatus, RiskLevel, AuditStatus, InvestigationStatus,
+    ComplianceRequirement, ComplianceReport, ComplianceAudit,
+    Investigation, RiskAssessment, RiskRegister, Policy, Regulation
 )
+
+from app.models.finance import (
+    PaymentStatus, PaymentMethod, TransactionType,
+    Budget, BudgetItem, Expenditure, Salary, Payment, FinancialReport
+)
+
 from app.models.security import (
-  LoginAttempt, SecurityLog, AccessControlList, SystemSetting,
-  SecurityIncident, DataBackup, SystemAuditLog
+    LoginStatus, ActivityType, SeverityLevel,
+    LoginAttempt, UserActivity, SecurityIncident, SecurityAudit,
+    Permission, ApiKey, SecurityConfiguration, TwoFactorAuthentication
 )
+
+# Import models with more complex dependencies
 from app.models.police import (
-  PoliceOfficer, IncidentReport, PoliceComplaint,
-   PoliceInvestigation, PoliceDisciplinaryAction,
-  Evidence
+    OfficerRank, OfficerStatus, ComplaintStatus, ComplaintPriority,
+    InvestigationStatus as PoliceInvestigationStatus, IncidentType, IncidentSeverity,
+    IncidentStatus, DisciplinaryActionType, DisciplinaryActionStatus, EvidenceType,
+    PoliceStation, PoliceOfficer, PoliceComplaint, PoliceInvestigation,
+    PoliceDisciplinaryAction, Evidence, IncidentReport
 )
+
 from app.models.crime_reporting import (
-  CrimeReport, MediaEvidence, WitnessStatement, ReportStatusUpdate,
-  EmergencyContact as CrimeEmergencyContact, SafetyAlert
+    CrimeType, CrimeSeverity, CaseStatus,
+    CrimeReport, CriminalCase, CaseUpdate, MissingPerson, WantedPerson
 )
 
+# Define __all__ to control what gets imported with "from app.models import *"
 __all__ = [
-  "Base",
-  # Government
-  "Ministry", "Department", "Agency", "County", "SubCounty", "Ward",
-  "Project", "Program", "Committee", "TaskForce", "PublicAsset", "Infrastructure",
-  # Employee
-  "Employee", "Position", "EmploymentHistory", "Role", "UserAccount",
-  "Qualification", "Education", "Training", "Attendance", "Leave",
-  "DisciplinaryAction", "Benefit", "Allowance", "EmergencyContact",
-  # Finance
-  "Salary", "Budget", "Expenditure", "Revenue", "Transaction", "Audit",
-  "Grant", "Donation", "Loan", "Investment", "TaxCollection",
-  "Asset", "AssetCategory", "AssetMovement", "AssetMaintenance",
-  "Procurement", "Contract", "ContractPayment", "Vendor", "Invoice",
-  # Performance
-  "PerformanceReview", "PerformanceMetric", "PerformanceGoal",
-  "TeamPerformance", "DepartmentPerformance", "ServiceDeliveryMetric",
-  # Public
-  "Complaint", "Feedback", "PublicParticipation", "InformationRequest",
-  "ServiceRating", "CitizenSatisfactionSurvey", "PublicMeeting",
-  # Compliance
-  "ComplianceRequirement", "ComplianceReport", "ComplianceAudit",
-  "Investigation", "RiskAssessment", "RiskRegister", "Policy", "Regulation",
-  # Security
-  "LoginAttempt", "SecurityLog", "AccessControlList", "SystemSetting",
-  "SecurityIncident", "DataBackup", "SystemAuditLog",
-  # Police
-  "PoliceOfficer", "IncidentReport", "PoliceComplaint", "PoliceInvestigation", 
-  "PoliceDisciplinaryAction", "Evidence",
-  # Crime Reporting
-  "CrimeReport", "MediaEvidence", "WitnessStatement", "ReportStatusUpdate",
-  "CrimeEmergencyContact", "SafetyAlert"
+    'Base',
+    # Employee
+    'Gender', 'EmploymentStatus', 'MaritalStatus', 'EducationLevel',
+    'QualificationType', 'TrainingStatus', 'LeaveType', 'LeaveStatus',
+    'DisciplinaryType', 'DisciplinaryStatus', 'BenefitType', 'AllowanceType',
+    'Position', 'Role', 'Employee', 'UserAccount', 'EmploymentHistory',
+    'Qualification', 'Education', 'Training', 'Attendance', 'Leave',
+    'DisciplinaryAction', 'Benefit', 'Allowance', 'EmployeeEmergencyContact',
+    # Government
+    'Ministry', 'Department', 'Division', 'Agency', 
+    'County', 'SubCounty', 'Ward', 'Project', 'GovernmentPolicy',
+    # Performance
+    'PerformanceRating', 'GoalStatus', 'ReviewStatus',
+    'PerformanceReview', 'PerformanceMetric', 'PerformanceGoal',
+    'TeamPerformance', 'DepartmentPerformance', 'ServiceDeliveryMetric',
+    # Compliance
+    'ComplianceStatus', 'RiskLevel', 'AuditStatus', 'InvestigationStatus',
+    'ComplianceRequirement', 'ComplianceReport', 'ComplianceAudit',
+    'Investigation', 'RiskAssessment', 'RiskRegister', 'Policy', 'Regulation',
+    # Finance
+    'PaymentStatus', 'PaymentMethod', 'TransactionType',
+    'Budget', 'BudgetItem', 'Expenditure', 'Salary', 'Payment', 'FinancialReport',
+    # Security
+    'LoginStatus', 'ActivityType', 'SeverityLevel',
+    'LoginAttempt', 'UserActivity', 'SecurityIncident', 'SecurityAudit',
+    'Permission', 'ApiKey', 'SecurityConfiguration', 'TwoFactorAuthentication',
+    # Police
+    'OfficerRank', 'OfficerStatus', 'ComplaintStatus', 'ComplaintPriority',
+    'PoliceInvestigationStatus', 'IncidentType', 'IncidentSeverity',
+    'IncidentStatus', 'DisciplinaryActionType', 'DisciplinaryActionStatus', 'EvidenceType',
+    'PoliceStation', 'PoliceOfficer', 'PoliceComplaint', 'PoliceInvestigation',
+    'PoliceDisciplinaryAction', 'Evidence', 'IncidentReport',
+    # Crime Reporting
+    'CrimeType', 'CrimeSeverity', 'CaseStatus',
+    'CrimeReport', 'CriminalCase', 'CaseUpdate', 'MissingPerson', 'WantedPerson'
 ]
-

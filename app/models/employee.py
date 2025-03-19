@@ -44,6 +44,113 @@ class EducationLevel(str, Enum):
     DOCTORATE = "doctorate"
     POSTDOCTORATE = "postdoctorate"
 
+class QualificationType(str, Enum):
+    ACADEMIC = "academic"
+    PROFESSIONAL = "professional"
+    TECHNICAL = "technical"
+    CERTIFICATION = "certification"
+    LICENSE = "license"
+    AWARD = "award"
+
+class TrainingStatus(str, Enum):
+    SCHEDULED = "scheduled"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+    DEFERRED = "deferred"
+
+class LeaveType(str, Enum):
+    ANNUAL = "annual"
+    SICK = "sick"
+    MATERNITY = "maternity"
+    PATERNITY = "paternity"
+    COMPASSIONATE = "compassionate"
+    STUDY = "study"
+    UNPAID = "unpaid"
+    OTHER = "other"
+
+class LeaveStatus(str, Enum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    CANCELLED = "cancelled"
+    COMPLETED = "completed"
+
+class DisciplinaryType(str, Enum):
+    VERBAL_WARNING = "verbal_warning"
+    WRITTEN_WARNING = "written_warning"
+    FINAL_WARNING = "final_warning"
+    SUSPENSION = "suspension"
+    DEMOTION = "demotion"
+    TERMINATION = "termination"
+
+class DisciplinaryStatus(str, Enum):
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    RESOLVED = "resolved"
+    APPEALED = "appealed"
+    CLOSED = "closed"
+
+class BenefitType(str, Enum):
+    HEALTH_INSURANCE = "health_insurance"
+    LIFE_INSURANCE = "life_insurance"
+    PENSION = "pension"
+    HOUSING = "housing"
+    TRANSPORT = "transport"
+    EDUCATION = "education"
+    OTHER = "other"
+
+class AllowanceType(str, Enum):
+    HOUSING = "housing"
+    TRANSPORT = "transport"
+    MEAL = "meal"
+    TELEPHONE = "telephone"
+    HARDSHIP = "hardship"
+    ENTERTAINMENT = "entertainment"
+    RESPONSIBILITY = "responsibility"
+    OTHER = "other"
+
+class Position(Base):
+    """Represents a job position in the government system."""
+    __tablename__ = "positions"
+    
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    code: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    salary_grade: Mapped[str] = mapped_column(String(50), nullable=False)
+    min_salary: Mapped[float] = mapped_column(nullable=False)
+    max_salary: Mapped[float] = mapped_column(nullable=False)
+    job_level: Mapped[int] = mapped_column(Integer, nullable=False)  # Hierarchical level in the organization
+    responsibilities: Mapped[str] = mapped_column(Text, nullable=False)
+    qualifications_required: Mapped[str] = mapped_column(Text, nullable=False)
+    experience_required: Mapped[str] = mapped_column(String(255), nullable=False)
+    skills_required: Mapped[str] = mapped_column(Text, nullable=False)
+    reporting_to: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)  # Position title this reports to
+    is_management: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    is_executive: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    
+    # Relationships
+    employees: Mapped[List["Employee"]] = relationship(back_populates="position")
+    
+    def __repr__(self) -> str:
+        return f"<Position(title='{self.title}', code='{self.code}')>"
+
+class Role(Base):
+    """Represents a role with specific permissions in the system."""
+    __tablename__ = "roles"
+    
+    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    permissions: Mapped[str] = mapped_column(Text, nullable=False)  # JSON string of permissions
+    is_system_role: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    
+    # Relationships
+    user_accounts: Mapped[List["UserAccount"]] = relationship(back_populates="role")
+    
+    def __repr__(self) -> str:
+        return f"<Role(name='{self.name}')>"
+
 class Employee(Base):
     """Represents an employee in the government system."""
     __tablename__ = "employees"
@@ -98,114 +205,35 @@ class Employee(Base):
     
     # Foreign keys
     position_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("positions.id"), nullable=False)
-    supervisor_id: Mapped[Optional[int]] = mapped_column(ForeignKey("employees.id"), nullable=True)
+    supervisor_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("employees.id"), nullable=True)
     
     # Optional foreign keys for organizational placement
-    ministry_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
-    department_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id"), nullable=True)
-    agency_id: Mapped[Optional[int]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
-    county_id: Mapped[Optional[int]] = mapped_column(ForeignKey("counties.id"), nullable=True)
-    sub_county_id: Mapped[Optional[int]] = mapped_column(ForeignKey("sub_counties.id"), nullable=True)
-    ward_id: Mapped[Optional[int]] = mapped_column(ForeignKey("wards.id"), nullable=True)
+    ministry_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
+    department_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("departments.id"), nullable=True)
+    agency_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
+    county_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("counties.id"), nullable=True)
+    sub_county_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("sub_counties.id"), nullable=True)
+    ward_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("wards.id"), nullable=True)
     
     # Relationships
     position: Mapped["Position"] = relationship(back_populates="employees")
     supervisor: Mapped[Optional["Employee"]] = relationship("Employee", remote_side=[id], foreign_keys=[supervisor_id], backref="subordinates")
     employment_history: Mapped[List["EmploymentHistory"]] = relationship(back_populates="employee", cascade="all, delete-orphan")
-    performance_reviews: Mapped[List["PerformanceReview"]] = relationship(back_populates="employee", cascade="all, delete-orphan")
-    salaries: Mapped[List["Salary"]] = relationship(back_populates="employee", cascade="all, delete-orphan")
+    performance_reviews: Mapped[List["PerformanceReview"]] = relationship(back_populates="employee", foreign_keys="PerformanceReview.employee_id")
+    salaries: Mapped[List["Salary"]] = relationship(back_populates="employee", foreign_keys="Salary.employee_id")
     user_account: Mapped[Optional["UserAccount"]] = relationship(back_populates="employee", uselist=False, cascade="all, delete-orphan")
     qualifications: Mapped[List["Qualification"]] = relationship(back_populates="employee", cascade="all, delete-orphan")
     education: Mapped[List["Education"]] = relationship(back_populates="employee", cascade="all, delete-orphan")
     trainings: Mapped[List["Training"]] = relationship(back_populates="employee", cascade="all, delete-orphan")
     attendances: Mapped[List["Attendance"]] = relationship(back_populates="employee", cascade="all, delete-orphan")
-    leaves: Mapped[List["Leave"]] = relationship(back_populates="employee", cascade="all, delete-orphan")
-    disciplinary_actions: Mapped[List["DisciplinaryAction"]] = relationship(back_populates="employee", cascade="all, delete-orphan")
+    leaves: Mapped[List["Leave"]] = relationship(back_populates="employee", foreign_keys="Leave.employee_id")
+    disciplinary_actions: Mapped[List["DisciplinaryAction"]] = relationship(back_populates="employee", foreign_keys="DisciplinaryAction.employee_id")
     benefits: Mapped[List["Benefit"]] = relationship(back_populates="employee", cascade="all, delete-orphan")
     allowances: Mapped[List["Allowance"]] = relationship(back_populates="employee", cascade="all, delete-orphan")
-    emergency_contacts: Mapped[List["EmergencyContact"]] = relationship(back_populates="employee", cascade="all, delete-orphan")
+    emergency_contacts: Mapped[List["EmployeeEmergencyContact"]] = relationship(back_populates="employee", cascade="all, delete-orphan")
     
     def __repr__(self) -> str:
         return f"<Employee(name='{self.first_name} {self.last_name}', employee_number='{self.employee_number}')>"
-
-
-class Position(Base):
-    """Represents a job position in the government system."""
-    __tablename__ = "positions"
-    
-    title: Mapped[str] = mapped_column(String(255), nullable=False)
-    code: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    salary_grade: Mapped[str] = mapped_column(String(50), nullable=False)
-    min_salary: Mapped[float] = mapped_column(nullable=False)
-    max_salary: Mapped[float] = mapped_column(nullable=False)
-    job_level: Mapped[int] = mapped_column(Integer, nullable=False)  # Hierarchical level in the organization
-    responsibilities: Mapped[str] = mapped_column(Text, nullable=False)
-    qualifications_required: Mapped[str] = mapped_column(Text, nullable=False)
-    experience_required: Mapped[str] = mapped_column(String(255), nullable=False)
-    skills_required: Mapped[str] = mapped_column(Text, nullable=False)
-    reporting_to: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)  # Position title this reports to
-    is_management: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    is_executive: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    
-    # Relationships
-    employees: Mapped[List["Employee"]] = relationship(back_populates="position")
-    
-    def __repr__(self) -> str:
-        return f"<Position(title='{self.title}', code='{self.code}')>"
-
-
-class EmploymentHistory(Base):
-    """Tracks an employee's position changes and organizational placements."""
-    __tablename__ = "employment_history"
-    
-    start_date: Mapped[date] = mapped_column(Date, nullable=False)
-    end_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
-    reason_for_change: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    change_type: Mapped[str] = mapped_column(String(50), nullable=False)  # Promotion, Transfer, Demotion, etc.
-    previous_salary: Mapped[Optional[float]] = mapped_column(nullable=True)
-    new_salary: Mapped[Optional[float]] = mapped_column(nullable=True)
-    approved_by: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    approval_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
-    
-    # Foreign keys
-    employee_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
-    position_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("positions.id"), nullable=False)
-    previous_position_id: Mapped[Optional[int]] = mapped_column(ForeignKey("positions.id"), nullable=True)
-    
-    # Optional foreign keys for organizational placement
-    ministry_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
-    department_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id"), nullable=True)
-    agency_id: Mapped[Optional[int]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
-    county_id: Mapped[Optional[int]] = mapped_column(ForeignKey("counties.id"), nullable=True)
-    sub_county_id: Mapped[Optional[int]] = mapped_column(ForeignKey("sub_counties.id"), nullable=True)
-    ward_id: Mapped[Optional[int]] = mapped_column(ForeignKey("wards.id"), nullable=True)
-    
-    # Relationships
-    employee: Mapped["Employee"] = relationship(back_populates="employment_history")
-    position: Mapped["Position"] = relationship(foreign_keys=[position_id])
-    previous_position: Mapped[Optional["Position"]] = relationship(foreign_keys=[previous_position_id])
-    
-    def __repr__(self) -> str:
-        return f"<EmploymentHistory(employee_id={self.employee_id}, start_date='{self.start_date}')>"
-
-
-class Role(Base):
-    """Represents a role with specific permissions in the system."""
-    __tablename__ = "roles"
-    
-    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    permissions: Mapped[str] = mapped_column(Text, nullable=False)  # JSON string of permissions
-    is_system_role: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
-    
-    # Relationships
-    user_accounts: Mapped[List["UserAccount"]] = relationship(back_populates="role")
-    
-    def __repr__(self) -> str:
-        return f"<Role(name='{self.name}')>"
-
 
 class UserAccount(Base):
     """Represents a user account for system access."""
@@ -236,15 +264,39 @@ class UserAccount(Base):
     def __repr__(self) -> str:
         return f"<UserAccount(username='{self.username}')>"
 
-
-class QualificationType(str, Enum):
-    ACADEMIC = "academic"
-    PROFESSIONAL = "professional"
-    TECHNICAL = "technical"
-    CERTIFICATION = "certification"
-    LICENSE = "license"
-    AWARD = "award"
-
+class EmploymentHistory(Base):
+    """Tracks an employee's position changes and organizational placements."""
+    __tablename__ = "employment_history"
+    
+    start_date: Mapped[date] = mapped_column(Date, nullable=False)
+    end_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    reason_for_change: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    change_type: Mapped[str] = mapped_column(String(50), nullable=False)  # Promotion, Transfer, Demotion, etc.
+    previous_salary: Mapped[Optional[float]] = mapped_column(nullable=True)
+    new_salary: Mapped[Optional[float]] = mapped_column(nullable=True)
+    approved_by: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    approval_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    
+    # Foreign keys
+    employee_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    position_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("positions.id"), nullable=False)
+    previous_position_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("positions.id"), nullable=True)
+    
+    # Optional foreign keys for organizational placement
+    ministry_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
+    department_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("departments.id"), nullable=True)
+    agency_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
+    county_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("counties.id"), nullable=True)
+    sub_county_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("sub_counties.id"), nullable=True)
+    ward_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("wards.id"), nullable=True)
+    
+    # Relationships
+    employee: Mapped["Employee"] = relationship(back_populates="employment_history")
+    position: Mapped["Position"] = relationship(foreign_keys=[position_id])
+    previous_position: Mapped[Optional["Position"]] = relationship(foreign_keys=[previous_position_id])
+    
+    def __repr__(self) -> str:
+        return f"<EmploymentHistory(employee_id={self.employee_id}, start_date='{self.start_date}')>"
 
 class Qualification(Base):
     """Represents a qualification held by an employee."""
@@ -270,7 +322,6 @@ class Qualification(Base):
     
     def __repr__(self) -> str:
         return f"<Qualification(title='{self.title}', employee_id={self.employee_id})>"
-
 
 class Education(Base):
     """Represents an employee's educational background."""
@@ -298,15 +349,6 @@ class Education(Base):
     
     def __repr__(self) -> str:
         return f"<Education(institution='{self.institution}', level='{self.level}', employee_id={self.employee_id})>"
-
-
-class TrainingStatus(str, Enum):
-    SCHEDULED = "scheduled"
-    IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
-    CANCELLED = "cancelled"
-    DEFERRED = "deferred"
-
 
 class Training(Base):
     """Represents training undertaken by an employee."""
@@ -336,7 +378,6 @@ class Training(Base):
     def __repr__(self) -> str:
         return f"<Training(title='{self.title}', employee_id={self.employee_id})>"
 
-
 class Attendance(Base):
     """Represents an employee's daily attendance record."""
     __tablename__ = "attendances"
@@ -356,27 +397,7 @@ class Attendance(Base):
     employee: Mapped["Employee"] = relationship(back_populates="attendances")
     
     def __repr__(self) -> str:
-        return f"<Attendance(employee_id={self.employee_id}, date='{self.date}', status='{self.status}')>"
-
-
-class LeaveType(str, Enum):
-    ANNUAL = "annual"
-    SICK = "sick"
-    MATERNITY = "maternity"
-    PATERNITY = "paternity"
-    COMPASSIONATE = "compassionate"
-    STUDY = "study"
-    UNPAID = "unpaid"
-    OTHER = "other"
-
-
-class LeaveStatus(str, Enum):
-    PENDING = "pending"
-    APPROVED = "approved"
-    REJECTED = "rejected"
-    CANCELLED = "cancelled"
-    COMPLETED = "completed"
-
+        return f"<Attendance(employee_id={self.employee_id}, date='{self.current_date}', status='{self.status}')>"
 
 class Leave(Base):
     """Represents an employee's leave request."""
@@ -384,12 +405,13 @@ class Leave(Base):
     
     leave_type: Mapped[LeaveType] = mapped_column(SQLEnum(LeaveType), nullable=False)
     start_date: Mapped[date] = mapped_column(Date, nullable=False)
+    start_date: Mapped[date] = mapped_column(Date, nullable=False)
     end_date: Mapped[date] = mapped_column(Date, nullable=False)
     total_days: Mapped[int] = mapped_column(Integer, nullable=False)
     reason: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[LeaveStatus] = mapped_column(SQLEnum(LeaveStatus), nullable=False, default=LeaveStatus.PENDING)
     application_date: Mapped[date] = mapped_column(Date, nullable=False)
-    approved_by: Mapped[Optional[int]] = mapped_column(ForeignKey("employees.id"), nullable=True)
+    approved_by: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("employees.id"), nullable=True)
     approval_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     rejection_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     cancellation_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
@@ -405,24 +427,6 @@ class Leave(Base):
     def __repr__(self) -> str:
         return f"<Leave(employee_id={self.employee_id}, type='{self.leave_type}', status='{self.status}')>"
 
-
-class DisciplinaryType(str, Enum):
-    VERBAL_WARNING = "verbal_warning"
-    WRITTEN_WARNING = "written_warning"
-    FINAL_WARNING = "final_warning"
-    SUSPENSION = "suspension"
-    DEMOTION = "demotion"
-    TERMINATION = "termination"
-
-
-class DisciplinaryStatus(str, Enum):
-    PENDING = "pending"
-    IN_PROGRESS = "in_progress"
-    RESOLVED = "resolved"
-    APPEALED = "appealed"
-    CLOSED = "closed"
-
-
 class DisciplinaryAction(Base):
     """Represents a disciplinary action taken against an employee."""
     __tablename__ = "employee_disciplinary_actions"
@@ -436,7 +440,7 @@ class DisciplinaryAction(Base):
     action_taken: Mapped[str] = mapped_column(Text, nullable=False)
     action_date: Mapped[date] = mapped_column(Date, nullable=False)
     duration: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # In days, for suspension
-    initiated_by: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    initiated_by: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
     witnesses: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     employee_response: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     resolution: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
@@ -455,17 +459,6 @@ class DisciplinaryAction(Base):
     
     def __repr__(self) -> str:
         return f"<DisciplinaryAction(employee_id={self.employee_id}, type='{self.action_type}', status='{self.status}')>"
-
-
-class BenefitType(str, Enum):
-    HEALTH_INSURANCE = "health_insurance"
-    LIFE_INSURANCE = "life_insurance"
-    PENSION = "pension"
-    HOUSING = "housing"
-    TRANSPORT = "transport"
-    EDUCATION = "education"
-    OTHER = "other"
-
 
 class Benefit(Base):
     """Represents benefits provided to an employee."""
@@ -492,18 +485,6 @@ class Benefit(Base):
     def __repr__(self) -> str:
         return f"<Benefit(employee_id={self.employee_id}, type='{self.benefit_type}')>"
 
-
-class AllowanceType(str, Enum):
-    HOUSING = "housing"
-    TRANSPORT = "transport"
-    MEAL = "meal"
-    TELEPHONE = "telephone"
-    HARDSHIP = "hardship"
-    ENTERTAINMENT = "entertainment"
-    RESPONSIBILITY = "responsibility"
-    OTHER = "other"
-
-
 class Allowance(Base):
     """Represents allowances paid to an employee."""
     __tablename__ = "allowances"
@@ -525,8 +506,7 @@ class Allowance(Base):
     def __repr__(self) -> str:
         return f"<Allowance(employee_id={self.employee_id}, type='{self.allowance_type}', amount={self.amount})>"
 
-
-class EmergencyContact(Base):
+class EmployeeEmergencyContact(Base):
     """Represents an emergency contact for an employee."""
     __tablename__ = "employee_emergency_contacts"
     
@@ -546,4 +526,3 @@ class EmergencyContact(Base):
     
     def __repr__(self) -> str:
         return f"<EmergencyContact(name='{self.name}', relationship='{self._relationship}', employee_id={self.employee_id})>"
-

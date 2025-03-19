@@ -65,7 +65,6 @@ class PerformanceReview(Base):
     def __repr__(self) -> str:
         return f"<PerformanceReview(employee_id={self.employee_id}, review_date='{self.review_date}', rating='{self.overall_rating}')>"
 
-
 class PerformanceMetric(Base):
     """Represents a specific metric evaluated in a performance review."""
     __tablename__ = "performance_metrics"
@@ -87,7 +86,6 @@ class PerformanceMetric(Base):
     
     def __repr__(self) -> str:
         return f"<PerformanceMetric(name='{self.name}', rating='{self.rating}')>"
-
 
 class PerformanceGoal(Base):
     """Represents a performance goal set for an employee."""
@@ -120,7 +118,6 @@ class PerformanceGoal(Base):
     def __repr__(self) -> str:
         return f"<PerformanceGoal(title='{self.title}', status='{self.status}', progress={self.progress}%)>"
 
-
 class TeamPerformance(Base):
     """Represents performance metrics for a team or department."""
     __tablename__ = "team_performances"
@@ -140,10 +137,10 @@ class TeamPerformance(Base):
     evaluator_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
     
     # Optional foreign keys for organizational placement
-    ministry_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
-    department_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id"), nullable=True)
-    agency_id: Mapped[Optional[int]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
-    county_id: Mapped[Optional[int]] = mapped_column(ForeignKey("counties.id"), nullable=True)
+    ministry_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
+    department_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("departments.id"), nullable=True)
+    agency_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
+    county_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("counties.id"), nullable=True)
     
     # Relationships
     team_lead: Mapped["Employee"] = relationship(foreign_keys=[team_lead_id])
@@ -151,7 +148,6 @@ class TeamPerformance(Base):
     
     def __repr__(self) -> str:
         return f"<TeamPerformance(team_name='{self.team_name}', period='{self.period_start} to {self.period_end}', rating='{self.overall_rating}')>"
-
 
 class DepartmentPerformance(Base):
     """Represents performance metrics for an entire department."""
@@ -174,10 +170,10 @@ class DepartmentPerformance(Base):
     evaluator_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
     
     # Optional foreign keys for organizational placement
-    ministry_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
-    department_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id"), nullable=True)
-    agency_id: Mapped[Optional[int]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
-    county_id: Mapped[Optional[int]] = mapped_column(ForeignKey("counties.id"), nullable=True)
+    ministry_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
+    department_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("departments.id"), nullable=True)
+    agency_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
+    county_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("counties.id"), nullable=True)
     
     # Relationships
     department_head: Mapped["Employee"] = relationship(foreign_keys=[department_head_id])
@@ -209,16 +205,15 @@ class ServiceDeliveryMetric(Base):
     responsible_officer_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
     
     # Optional foreign keys for organizational placement
-    ministry_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
-    department_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id"), nullable=True)
-    agency_id: Mapped[Optional[int]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
-    county_id: Mapped[Optional[int]] = mapped_column(ForeignKey("counties.id"), nullable=True)
-    sub_county_id: Mapped[Optional[int]] = mapped_column(ForeignKey("sub_counties.id"), nullable=True)
-    ward_id: Mapped[Optional[int]] = mapped_column(ForeignKey("wards.id"), nullable=True)
+    ministry_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
+    department_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("departments.id"), nullable=True)
+    agency_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
+    county_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("counties.id"), nullable=True)
+    sub_county_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("sub_counties.id"), nullable=True)
+    ward_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("wards.id"), nullable=True)
     
     # Relationships
     responsible_officer: Mapped["Employee"] = relationship(foreign_keys=[responsible_officer_id])
     
     def __repr__(self) -> str:
         return f"<ServiceDeliveryMetric(service_name='{self.service_name}', performance_percentage={self.performance_percentage}%, rating='{self.rating}')>"
-

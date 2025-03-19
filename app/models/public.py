@@ -1,6 +1,7 @@
 from datetime import date, datetime
 from enum import Enum
 from typing import Optional, List, TYPE_CHECKING
+import uuid
 from sqlalchemy import String, ForeignKey, Text, Date, DateTime, Enum as SQLEnum, Integer, Float, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base
@@ -56,12 +57,12 @@ class Complaint(Base):
     attachments: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON string of attachment URLs
     
     # Optional foreign keys for organizational placement
-    ministry_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
-    department_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id"), nullable=True)
-    agency_id: Mapped[Optional[int]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
-    county_id: Mapped[Optional[int]] = mapped_column(ForeignKey("counties.id"), nullable=True)
-    sub_county_id: Mapped[Optional[int]] = mapped_column(ForeignKey("sub_counties.id"), nullable=True)
-    ward_id: Mapped[Optional[int]] = mapped_column(ForeignKey("wards.id"), nullable=True)
+    ministry_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
+    department_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("departments.id"), nullable=True)
+    agency_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
+    county_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("counties.id"), nullable=True)
+    sub_county_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("sub_counties.id"), nullable=True)
+    ward_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("wards.id"), nullable=True)
     
     # Relationships
     assignee: Mapped[Optional["Employee"]] = relationship(foreign_keys=[assigned_to])
@@ -105,12 +106,12 @@ class Feedback(Base):
     response_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     
     # Optional foreign keys for organizational placement
-    ministry_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
-    department_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id"), nullable=True)
-    agency_id: Mapped[Optional[int]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
-    county_id: Mapped[Optional[int]] = mapped_column(ForeignKey("counties.id"), nullable=True)
-    sub_county_id: Mapped[Optional[int]] = mapped_column(ForeignKey("sub_counties.id"), nullable=True)
-    ward_id: Mapped[Optional[int]] = mapped_column(ForeignKey("wards.id"), nullable=True)
+    ministry_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
+    department_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("departments.id"), nullable=True)
+    agency_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
+    county_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("counties.id"), nullable=True)
+    sub_county_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("sub_counties.id"), nullable=True)
+    ward_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("wards.id"), nullable=True)
     
     # Relationships
     reviewer: Mapped[Optional["Employee"]] = relationship(foreign_keys=[reviewed_by])
@@ -157,14 +158,14 @@ class PublicParticipation(Base):
     publication_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     
     # Optional foreign keys for organizational placement
-    ministry_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
-    department_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id"), nullable=True)
-    agency_id: Mapped[Optional[int]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
-    county_id: Mapped[Optional[int]] = mapped_column(ForeignKey("counties.id"), nullable=True)
-    sub_county_id: Mapped[Optional[int]] = mapped_column(ForeignKey("sub_counties.id"), nullable=True)
-    ward_id: Mapped[Optional[int]] = mapped_column(ForeignKey("wards.id"), nullable=True)
-    project_id: Mapped[Optional[int]] = mapped_column(ForeignKey("projects.id"), nullable=True)
-    program_id: Mapped[Optional[int]] = mapped_column(ForeignKey("programs.id"), nullable=True)
+    ministry_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
+    department_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("departments.id"), nullable=True)
+    agency_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
+    county_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("counties.id"), nullable=True)
+    sub_county_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("sub_counties.id"), nullable=True)
+    ward_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("wards.id"), nullable=True)
+    project_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("projects.id"), nullable=True)
+    program_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("programs.id"), nullable=True)
     
     # Relationships
     organizer: Mapped["Employee"] = relationship(foreign_keys=[organized_by])
@@ -215,10 +216,10 @@ class InformationRequest(Base):
     satisfaction_rating: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # 1-5 scale
     
     # Optional foreign keys for organizational placement
-    ministry_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
-    department_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id"), nullable=True)
-    agency_id: Mapped[Optional[int]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
-    county_id: Mapped[Optional[int]] = mapped_column(ForeignKey("counties.id"), nullable=True)
+    ministry_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
+    department_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("departments.id"), nullable=True)
+    agency_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
+    county_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("counties.id"), nullable=True)
     
     # Relationships
     assignee: Mapped[Optional["Employee"]] = relationship(foreign_keys=[assigned_to])
@@ -252,12 +253,12 @@ class ServiceRating(Base):
     review_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     
     # Optional foreign keys for organizational placement
-    ministry_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
-    department_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id"), nullable=True)
-    agency_id: Mapped[Optional[int]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
-    county_id: Mapped[Optional[int]] = mapped_column(ForeignKey("counties.id"), nullable=True)
-    sub_county_id: Mapped[Optional[int]] = mapped_column(ForeignKey("sub_counties.id"), nullable=True)
-    ward_id: Mapped[Optional[int]] = mapped_column(ForeignKey("wards.id"), nullable=True)
+    ministry_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
+    department_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("departments.id"), nullable=True)
+    agency_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
+    county_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("counties.id"), nullable=True)
+    sub_county_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("sub_counties.id"), nullable=True)
+    ward_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("wards.id"), nullable=True)
     
     # Relationships
     reviewer: Mapped[Optional["Employee"]] = relationship(foreign_keys=[reviewed_by])
@@ -290,10 +291,10 @@ class CitizenSatisfactionSurvey(Base):
     approved_by: Mapped[Optional[int]] = mapped_column(ForeignKey("employees.id"), nullable=True)
     
     # Optional foreign keys for organizational placement
-    ministry_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
-    department_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id"), nullable=True)
-    agency_id: Mapped[Optional[int]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
-    county_id: Mapped[Optional[int]] = mapped_column(ForeignKey("counties.id"), nullable=True)
+    ministry_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
+    department_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("departments.id"), nullable=True)
+    agency_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
+    county_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("counties.id"), nullable=True)
     
     # Relationships
     conductor: Mapped["Employee"] = relationship(foreign_keys=[conducted_by])
@@ -326,16 +327,16 @@ class PublicMeeting(Base):
     publication_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     
     # Foreign keys
-    participation_id: Mapped[Optional[int]] = mapped_column(ForeignKey("public_participation.id"), nullable=True)
+    participation_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("public_participation.id"), nullable=True)
     organized_by: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
     
     # Optional foreign keys for organizational placement
-    ministry_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
-    department_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id"), nullable=True)
-    agency_id: Mapped[Optional[int]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
-    county_id: Mapped[Optional[int]] = mapped_column(ForeignKey("counties.id"), nullable=True)
-    sub_county_id: Mapped[Optional[int]] = mapped_column(ForeignKey("sub_counties.id"), nullable=True)
-    ward_id: Mapped[Optional[int]] = mapped_column(ForeignKey("wards.id"), nullable=True)
+    ministry_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
+    department_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("departments.id"), nullable=True)
+    agency_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
+    county_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("counties.id"), nullable=True)
+    sub_county_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("sub_counties.id"), nullable=True)
+    ward_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("wards.id"), nullable=True)
     
     # Relationships
     participation_event: Mapped[Optional["PublicParticipation"]] = relationship(back_populates="public_meetings")

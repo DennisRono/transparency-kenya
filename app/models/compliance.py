@@ -81,14 +81,14 @@ class ComplianceReport(Base):
     
     # Foreign keys
     requirement_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("compliance_requirements.id"), nullable=False)
-    prepared_by: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
-    approved_by: Mapped[Optional[int]] = mapped_column(ForeignKey("employees.id"), nullable=True)
+    prepared_by: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    approved_by: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("employees.id"), nullable=True)
     
     # Optional foreign keys for organizational placement
-    ministry_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
-    department_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id"), nullable=True)
-    agency_id: Mapped[Optional[int]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
-    county_id: Mapped[Optional[int]] = mapped_column(ForeignKey("counties.id"), nullable=True)
+    ministry_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
+    department_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("departments.id"), nullable=True)
+    agency_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
+    county_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("counties.id"), nullable=True)
     
     # Relationships
     requirement: Mapped["ComplianceRequirement"] = relationship(back_populates="compliance_reports")
@@ -98,7 +98,7 @@ class ComplianceReport(Base):
     def __repr__(self) -> str:
         return f"<ComplianceReport(requirement_id={self.requirement_id}, status='{self.status}', report_date='{self.report_date}')>"
 
-class Audit(Base):
+class ComplianceAudit(Base):
     """Represents a compliance audit."""
     __tablename__ = "compliance_audits"
     
@@ -123,13 +123,13 @@ class Audit(Base):
     auditor_contact: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     
     # Foreign keys
-    lead_auditor_id: Mapped[Optional[int]] = mapped_column(ForeignKey("employees.id"), nullable=True)
+    lead_auditor_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("employees.id"), nullable=True)
     
     # Optional foreign keys for organizational placement
-    ministry_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
-    department_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id"), nullable=True)
-    agency_id: Mapped[Optional[int]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
-    county_id: Mapped[Optional[int]] = mapped_column(ForeignKey("counties.id"), nullable=True)
+    ministry_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
+    department_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("departments.id"), nullable=True)
+    agency_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
+    county_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("counties.id"), nullable=True)
     
     # Relationships
     lead_auditor: Mapped[Optional["Employee"]] = relationship(foreign_keys=[lead_auditor_id])
@@ -159,10 +159,10 @@ class Investigation(Base):
     lead_investigator_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
     
     # Optional foreign keys for organizational placement
-    ministry_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
-    department_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id"), nullable=True)
-    agency_id: Mapped[Optional[int]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
-    county_id: Mapped[Optional[int]] = mapped_column(ForeignKey("counties.id"), nullable=True)
+    ministry_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
+    department_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("departments.id"), nullable=True)
+    agency_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
+    county_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("counties.id"), nullable=True)
     
     # Relationships
     lead_investigator: Mapped["Employee"] = relationship(foreign_keys=[lead_investigator_id])
@@ -187,13 +187,13 @@ class RiskAssessment(Base):
     
     # Foreign keys
     assessor_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
-    approved_by: Mapped[Optional[int]] = mapped_column(ForeignKey("employees.id"), nullable=True)
+    approved_by: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("employees.id"), nullable=True)
     
     # Optional foreign keys for organizational placement
-    ministry_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
-    department_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id"), nullable=True)
-    agency_id: Mapped[Optional[int]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
-    county_id: Mapped[Optional[int]] = mapped_column(ForeignKey("counties.id"), nullable=True)
+    ministry_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
+    department_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("departments.id"), nullable=True)
+    agency_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
+    county_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("counties.id"), nullable=True)
     
     # Relationships
     assessor: Mapped["Employee"] = relationship(foreign_keys=[assessor_id])
@@ -225,7 +225,7 @@ class RiskRegister(Base):
     
     # Foreign keys
     risk_assessment_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("risk_assessments.id"), nullable=False)
-    risk_owner_id: Mapped[Optional[int]] = mapped_column(ForeignKey("employees.id"), nullable=True)
+    risk_owner_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("employees.id"), nullable=True)
     
     # Relationships
     risk_assessment: Mapped["RiskAssessment"] = relationship(back_populates="risk_registers")
@@ -253,13 +253,13 @@ class Policy(Base):
     
     # Foreign keys
     author_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
-    approved_by: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    approved_by: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
     
     # Optional foreign keys for organizational placement
-    ministry_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
-    department_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id"), nullable=True)
-    agency_id: Mapped[Optional[int]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
-    county_id: Mapped[Optional[int]] = mapped_column(ForeignKey("counties.id"), nullable=True)
+    ministry_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
+    department_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("departments.id"), nullable=True)
+    agency_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
+    county_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("counties.id"), nullable=True)
     
     # Relationships
     author: Mapped["Employee"] = relationship(foreign_keys=[author_id])
@@ -289,13 +289,13 @@ class Regulation(Base):
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
     # Foreign keys
-    responsible_person_id: Mapped[Optional[int]] = mapped_column(ForeignKey("employees.id"), nullable=True)
+    responsible_person_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("employees.id"), nullable=True)
     
     # Optional foreign keys for organizational placement
-    ministry_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
-    department_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id"), nullable=True)
-    agency_id: Mapped[Optional[int]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
-    county_id: Mapped[Optional[int]] = mapped_column(ForeignKey("counties.id"), nullable=True)
+    ministry_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
+    department_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("departments.id"), nullable=True)
+    agency_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("agencies.id"), nullable=True)
+    county_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("counties.id"), nullable=True)
     
     # Relationships
     responsible_person: Mapped[Optional["Employee"]] = relationship(foreign_keys=[responsible_person_id])
