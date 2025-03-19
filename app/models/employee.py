@@ -1,6 +1,7 @@
 from datetime import date, datetime, time
 from enum import Enum
 from typing import Optional, List, TYPE_CHECKING
+import uuid
 from sqlalchemy import String, ForeignKey, Text, Date, Boolean, Enum as SQLEnum, Time, Integer, Float, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base
@@ -96,7 +97,7 @@ class Employee(Base):
     account_number: Mapped[str] = mapped_column(String(50), nullable=False)
     
     # Foreign keys
-    position_id: Mapped[int] = mapped_column(ForeignKey("positions.id"), nullable=False)
+    position_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("positions.id"), nullable=False)
     supervisor_id: Mapped[Optional[int]] = mapped_column(ForeignKey("employees.id"), nullable=True)
     
     # Optional foreign keys for organizational placement
@@ -168,8 +169,8 @@ class EmploymentHistory(Base):
     approval_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     
     # Foreign keys
-    employee_id: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
-    position_id: Mapped[int] = mapped_column(ForeignKey("positions.id"), nullable=False)
+    employee_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    position_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("positions.id"), nullable=False)
     previous_position_id: Mapped[Optional[int]] = mapped_column(ForeignKey("positions.id"), nullable=True)
     
     # Optional foreign keys for organizational placement
@@ -224,8 +225,8 @@ class UserAccount(Base):
     activation_token_expiry: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     
     # Foreign keys
-    employee_id: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False, unique=True)
-    role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"), nullable=False)
+    employee_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False, unique=True)
+    role_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("roles.id"), nullable=False)
     
     # Relationships
     employee: Mapped["Employee"] = relationship(back_populates="user_account")
@@ -262,7 +263,7 @@ class Qualification(Base):
     document_url: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     
     # Foreign keys
-    employee_id: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    employee_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
     
     # Relationships
     employee: Mapped["Employee"] = relationship(back_populates="qualifications")
@@ -290,7 +291,7 @@ class Education(Base):
     document_url: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     
     # Foreign keys
-    employee_id: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    employee_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
     
     # Relationships
     employee: Mapped["Employee"] = relationship(back_populates="education")
@@ -327,7 +328,7 @@ class Training(Base):
     certificate_url: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     
     # Foreign keys
-    employee_id: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    employee_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
     
     # Relationships
     employee: Mapped["Employee"] = relationship(back_populates="trainings")
@@ -349,7 +350,7 @@ class Attendance(Base):
     remarks: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
     # Foreign keys
-    employee_id: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    employee_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
     
     # Relationships
     employee: Mapped["Employee"] = relationship(back_populates="attendances")
@@ -395,7 +396,7 @@ class Leave(Base):
     attachments: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON string of attachment URLs
     
     # Foreign keys
-    employee_id: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    employee_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
     
     # Relationships
     employee: Mapped["Employee"] = relationship(back_populates="leaves", foreign_keys=[employee_id])
@@ -446,7 +447,7 @@ class DisciplinaryAction(Base):
     documents: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON string of document URLs
     
     # Foreign keys
-    employee_id: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    employee_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
     
     # Relationships
     employee: Mapped["Employee"] = relationship(back_populates="disciplinary_actions", foreign_keys=[employee_id])
@@ -483,7 +484,7 @@ class Benefit(Base):
     coverage_details: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
     # Foreign keys
-    employee_id: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    employee_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
     
     # Relationships
     employee: Mapped["Employee"] = relationship(back_populates="benefits")
@@ -516,7 +517,7 @@ class Allowance(Base):
     end_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     
     # Foreign keys
-    employee_id: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    employee_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
     
     # Relationships
     employee: Mapped["Employee"] = relationship(back_populates="allowances")
@@ -538,7 +539,7 @@ class EmergencyContact(Base):
     is_primary: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     
     # Foreign keys
-    employee_id: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    employee_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
     
     # Relationships
     employee: Mapped["Employee"] = relationship(back_populates="emergency_contacts")

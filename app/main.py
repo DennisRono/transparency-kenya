@@ -3,6 +3,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import text
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.exceptions import setup_exception_handlers
@@ -67,7 +68,7 @@ async def root():
 async def health_check(db: AsyncSession = Depends(get_db)):
     try:
         # Check database connection
-        await db.execute("SELECT 1")
+        await db.execute(text("SELECT 1"))
         return {"status": "healthy", "database": "connected"}
     except Exception as e:
         return {"status": "unhealthy", "database": str(e)}

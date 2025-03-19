@@ -1,6 +1,7 @@
 from datetime import date, datetime
 from enum import Enum
 from typing import Optional, List, TYPE_CHECKING
+import uuid
 from sqlalchemy import String, ForeignKey, Text, Date, Enum as SQLEnum, UniqueConstraint, Integer, Float, Boolean, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base
@@ -49,7 +50,7 @@ class Salary(Base):
     payment_reference: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     
     # Foreign keys
-    employee_id: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    employee_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
     approved_by: Mapped[Optional[int]] = mapped_column(ForeignKey("employees.id"), nullable=True)
     
     # Relationships
@@ -165,7 +166,7 @@ class Expenditure(Base):
     supporting_documents: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON string of document URLs
     
     # Foreign keys
-    budget_id: Mapped[int] = mapped_column(ForeignKey("budgets.id"), nullable=False)
+    budget_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("budgets.id"), nullable=False)
     
     # Optional foreign keys for organizational placement
     ministry_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
@@ -316,8 +317,8 @@ class Audit(Base):
     user_agent: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     
     # Foreign keys
-    transaction_id: Mapped[int] = mapped_column(ForeignKey("transactions.id"), nullable=False)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    transaction_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("transactions.id"), nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
     
     # Relationships
     transaction: Mapped["Transaction"] = relationship(back_populates="audits")
@@ -556,7 +557,7 @@ class DebtPayment(Base):
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
     # Foreign keys
-    loan_id: Mapped[int] = mapped_column(ForeignKey("loans.id"), nullable=False)
+    loan_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("loans.id"), nullable=False)
     paid_by: Mapped[Optional[int]] = mapped_column(ForeignKey("employees.id"), nullable=True)
     
     # Relationships
@@ -746,7 +747,7 @@ class Asset(Base):
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
     # Foreign keys
-    category_id: Mapped[int] = mapped_column(ForeignKey("asset_categories.id"), nullable=False)
+    category_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("asset_categories.id"), nullable=False)
     
     # Optional foreign keys for organizational placement
     ministry_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
@@ -796,7 +797,7 @@ class AssetMovement(Base):
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
     # Foreign keys
-    asset_id: Mapped[int] = mapped_column(ForeignKey("assets.id"), nullable=False)
+    asset_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("assets.id"), nullable=False)
     
     # Relationships
     asset: Mapped["Asset"] = relationship(back_populates="asset_movements")
@@ -853,7 +854,7 @@ class AssetMaintenance(Base):
     verified_by: Mapped[Optional[int]] = mapped_column(ForeignKey("employees.id"), nullable=True)
     
     # Foreign keys
-    asset_id: Mapped[int] = mapped_column(ForeignKey("assets.id"), nullable=False)
+    asset_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("assets.id"), nullable=False)
     
     # Relationships
     asset: Mapped["Asset"] = relationship(back_populates="asset_maintenances")
@@ -1006,7 +1007,7 @@ class Contract(Base):
     amendments: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON string of amendments
     
     # Foreign keys
-    vendor_id: Mapped[int] = mapped_column(ForeignKey("vendors.id"), nullable=False)
+    vendor_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("vendors.id"), nullable=False)
     procurement_id: Mapped[Optional[int]] = mapped_column(ForeignKey("procurements.id"), nullable=True)
     
     # Optional foreign keys for organizational placement
@@ -1061,7 +1062,7 @@ class ContractPayment(Base):
     paid_by: Mapped[Optional[int]] = mapped_column(ForeignKey("employees.id"), nullable=True)
     
     # Foreign keys
-    contract_id: Mapped[int] = mapped_column(ForeignKey("contracts.id"), nullable=False)
+    contract_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("contracts.id"), nullable=False)
     
     # Relationships
     contract: Mapped["Contract"] = relationship(back_populates="contract_payments")
@@ -1172,7 +1173,7 @@ class Invoice(Base):
     dispute_resolved_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     
     # Foreign keys
-    vendor_id: Mapped[int] = mapped_column(ForeignKey("vendors.id"), nullable=False)
+    vendor_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("vendors.id"), nullable=False)
     contract_id: Mapped[Optional[int]] = mapped_column(ForeignKey("contracts.id"), nullable=True)
     
     # Optional foreign keys for organizational placement

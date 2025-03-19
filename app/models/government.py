@@ -1,6 +1,7 @@
 from datetime import date
 from enum import Enum
 from typing import Optional, List
+import uuid
 from sqlalchemy import String, ForeignKey, Text, Integer, Float, Date, Boolean, Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base
@@ -48,7 +49,7 @@ class Department(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     
     # Foreign keys
-    ministry_id: Mapped[int] = mapped_column(ForeignKey("ministries.id"), nullable=False)
+    ministry_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("ministries.id"), nullable=False)
     
     # Relationships
     ministry: Mapped["Ministry"] = relationship(back_populates="departments")
@@ -79,7 +80,7 @@ class Agency(Base):
     regulatory_authority: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     
     # Foreign keys
-    department_id: Mapped[int] = mapped_column(ForeignKey("departments.id"), nullable=False)
+    department_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("departments.id"), nullable=False)
     
     # Relationships
     department: Mapped["Department"] = relationship(back_populates="agencies")
@@ -136,7 +137,7 @@ class SubCounty(Base):
     email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     
     # Foreign keys
-    county_id: Mapped[int] = mapped_column(ForeignKey("counties.id"), nullable=False)
+    county_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("counties.id"), nullable=False)
     
     # Relationships
     county: Mapped["County"] = relationship(back_populates="sub_counties")
@@ -163,7 +164,7 @@ class Ward(Base):
     email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     
     # Foreign keys
-    sub_county_id: Mapped[int] = mapped_column(ForeignKey("sub_counties.id"), nullable=False)
+    sub_county_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("sub_counties.id"), nullable=False)
     
     # Relationships
     sub_county: Mapped["SubCounty"] = relationship(back_populates="wards")

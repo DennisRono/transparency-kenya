@@ -1,6 +1,7 @@
 from datetime import datetime
 from enum import Enum
 from typing import Optional, List, TYPE_CHECKING
+import uuid
 from sqlalchemy import String, ForeignKey, Text, DateTime, Enum as SQLEnum, Integer, Boolean, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base
@@ -55,7 +56,7 @@ class LoginAttempt(Base):
     failure_reason: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     
     # Foreign keys
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
     
     # Relationships
     user: Mapped["UserAccount"] = relationship(back_populates="login_attempts")
@@ -216,7 +217,7 @@ class SystemAuditLog(Base):
     user_agent: Mapped[str] = mapped_column(String(255), nullable=False)
     
     # Foreign keys
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
     
     # Relationships
     user: Mapped["UserAccount"] = relationship()

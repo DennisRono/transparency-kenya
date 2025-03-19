@@ -1,6 +1,7 @@
 from datetime import date, datetime
 from enum import Enum
 from typing import Optional, List
+import uuid
 from sqlalchemy import String, ForeignKey, Text, Date, DateTime, Enum as SQLEnum, Integer, Float, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base
@@ -195,8 +196,8 @@ class PoliceInvestigation(Base):
     action_taken: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
     # Foreign keys
-    complaint_id: Mapped[int] = mapped_column(ForeignKey("police_complaints.id"), nullable=False)
-    lead_investigator_id: Mapped[int] = mapped_column(ForeignKey("police_officers.id"), nullable=False)
+    complaint_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("police_complaints.id"), nullable=False)
+    lead_investigator_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("police_officers.id"), nullable=False)
     
     # Relationships
     complaint: Mapped["PoliceComplaint"] = relationship(back_populates="investigation")
@@ -240,7 +241,7 @@ class PoliceDisciplinaryAction(Base):
     appeal_outcome: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
     # Foreign keys
-    officer_id: Mapped[int] = mapped_column(ForeignKey("police_officers.id"), nullable=False)
+    officer_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("police_officers.id"), nullable=False)
     investigation_id: Mapped[Optional[int]] = mapped_column(ForeignKey("police_investigations.id"), nullable=True)
     
     # Relationships
@@ -273,7 +274,7 @@ class Evidence(Base):
     file_url: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)  # For digital evidence
     
     # Foreign keys
-    investigation_id: Mapped[int] = mapped_column(ForeignKey("police_investigations.id"), nullable=False)
+    investigation_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("police_investigations.id"), nullable=False)
     
     # Relationships
     investigation: Mapped["PoliceInvestigation"] = relationship(back_populates="evidence_items")
@@ -316,9 +317,9 @@ class IncidentReport(Base):
     resolution_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     
     # Foreign keys
-    reporting_officer_id: Mapped[int] = mapped_column(ForeignKey("police_officers.id"), nullable=False)
+    reporting_officer_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("police_officers.id"), nullable=False)
     supervisor_id: Mapped[Optional[int]] = mapped_column(ForeignKey("police_officers.id"), nullable=True)
-    station_id: Mapped[int] = mapped_column(ForeignKey("police_stations.id"), nullable=False)
+    station_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("police_stations.id"), nullable=False)
     
     # Relationships
     reporting_officer: Mapped["PoliceOfficer"] = relationship("PoliceOfficer", foreign_keys=[reporting_officer_id])

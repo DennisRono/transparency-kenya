@@ -1,6 +1,7 @@
 from datetime import date
 from enum import Enum
 from typing import Optional, List, TYPE_CHECKING
+import uuid
 from sqlalchemy import String, ForeignKey, Text, Date, Integer, Enum as SQLEnum, Float, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base
@@ -53,8 +54,8 @@ class PerformanceReview(Base):
     next_review_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     
     # Foreign keys
-    employee_id: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
-    reviewer_id: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    employee_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    reviewer_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
     
     # Relationships
     employee: Mapped["Employee"] = relationship(back_populates="performance_reviews", foreign_keys=[employee_id])
@@ -79,7 +80,7 @@ class PerformanceMetric(Base):
     evidence: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
     # Foreign keys
-    performance_review_id: Mapped[int] = mapped_column(ForeignKey("performance_reviews.id"), nullable=False)
+    performance_review_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("performance_reviews.id"), nullable=False)
     
     # Relationships
     performance_review: Mapped["PerformanceReview"] = relationship(back_populates="performance_metrics")
@@ -109,8 +110,8 @@ class PerformanceGoal(Base):
     strategic_objective: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
     # Foreign keys
-    employee_id: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
-    supervisor_id: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    employee_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    supervisor_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
     
     # Relationships
     employee: Mapped["Employee"] = relationship(foreign_keys=[employee_id])
@@ -135,8 +136,8 @@ class TeamPerformance(Base):
     action_plan: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
     # Foreign keys
-    team_lead_id: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
-    evaluator_id: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    team_lead_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    evaluator_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
     
     # Optional foreign keys for organizational placement
     ministry_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
@@ -169,8 +170,8 @@ class DepartmentPerformance(Base):
     action_plan: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
     # Foreign keys
-    department_head_id: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
-    evaluator_id: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    department_head_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    evaluator_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
     
     # Optional foreign keys for organizational placement
     ministry_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
@@ -205,7 +206,7 @@ class ServiceDeliveryMetric(Base):
     improvement_actions: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
     # Foreign keys
-    responsible_officer_id: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    responsible_officer_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
     
     # Optional foreign keys for organizational placement
     ministry_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ministries.id"), nullable=True)

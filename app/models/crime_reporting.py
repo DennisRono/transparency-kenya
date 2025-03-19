@@ -1,6 +1,7 @@
 from datetime import datetime
 from enum import Enum
 from typing import Optional, List, TYPE_CHECKING
+import uuid
 from sqlalchemy import String, ForeignKey, Text, DateTime, Enum as SQLEnum, Integer, Float, Boolean, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base
@@ -129,7 +130,7 @@ class MediaEvidence(Base):
     verification_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
     # Foreign keys
-    crime_report_id: Mapped[int] = mapped_column(ForeignKey("crime_reports.id"), nullable=False)
+    crime_report_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("crime_reports.id"), nullable=False)
     
     # Relationships
     crime_report: Mapped["CrimeReport"] = relationship(back_populates="media_evidence")
@@ -160,7 +161,7 @@ class WitnessStatement(Base):
     verification_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
     # Foreign keys
-    crime_report_id: Mapped[int] = mapped_column(ForeignKey("crime_reports.id"), nullable=False)
+    crime_report_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("crime_reports.id"), nullable=False)
     
     # Relationships
     crime_report: Mapped["CrimeReport"] = relationship(back_populates="witness_statements")
@@ -182,7 +183,7 @@ class ReportStatusUpdate(Base):
     notification_datetime: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     
     # Foreign keys
-    crime_report_id: Mapped[int] = mapped_column(ForeignKey("crime_reports.id"), nullable=False)
+    crime_report_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("crime_reports.id"), nullable=False)
     updated_by: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
     
     # Relationships

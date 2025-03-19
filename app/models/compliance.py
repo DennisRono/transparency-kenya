@@ -1,6 +1,7 @@
 from datetime import date, datetime
 from enum import Enum
 from typing import Optional, List, TYPE_CHECKING
+import uuid
 from sqlalchemy import String, ForeignKey, Text, Date, DateTime, Enum as SQLEnum, Integer, Float, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base
@@ -79,7 +80,7 @@ class ComplianceReport(Base):
     next_review_date: Mapped[date] = mapped_column(Date, nullable=False)
     
     # Foreign keys
-    requirement_id: Mapped[int] = mapped_column(ForeignKey("compliance_requirements.id"), nullable=False)
+    requirement_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("compliance_requirements.id"), nullable=False)
     prepared_by: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
     approved_by: Mapped[Optional[int]] = mapped_column(ForeignKey("employees.id"), nullable=True)
     
@@ -155,7 +156,7 @@ class Investigation(Base):
     confidentiality_level: Mapped[str] = mapped_column(String(50), nullable=False)  # Public, Confidential, Restricted, etc.
     
     # Foreign keys
-    lead_investigator_id: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    lead_investigator_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
     
     # Optional foreign keys for organizational placement
     ministry_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ministries.id"), nullable=True)
@@ -185,7 +186,7 @@ class RiskAssessment(Base):
     action_plan: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     
     # Foreign keys
-    assessor_id: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    assessor_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
     approved_by: Mapped[Optional[int]] = mapped_column(ForeignKey("employees.id"), nullable=True)
     
     # Optional foreign keys for organizational placement
@@ -223,7 +224,7 @@ class RiskRegister(Base):
     review_date: Mapped[date] = mapped_column(Date, nullable=False)
     
     # Foreign keys
-    risk_assessment_id: Mapped[int] = mapped_column(ForeignKey("risk_assessments.id"), nullable=False)
+    risk_assessment_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("risk_assessments.id"), nullable=False)
     risk_owner_id: Mapped[Optional[int]] = mapped_column(ForeignKey("employees.id"), nullable=True)
     
     # Relationships
@@ -251,7 +252,7 @@ class Policy(Base):
     document_url: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     
     # Foreign keys
-    author_id: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
+    author_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("employees.id"), nullable=False)
     approved_by: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=False)
     
     # Optional foreign keys for organizational placement

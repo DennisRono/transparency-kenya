@@ -1,13 +1,14 @@
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from sqlalchemy import String, DateTime, func, ForeignKey, Text
+import uuid
+from sqlalchemy import UUID, String, DateTime, func, ForeignKey, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 class Base(DeclarativeBase):
     """Base model for all models in the application."""
     
     # Common columns for all tables
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=lambda: str(uuid.uuid4()), index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, 
